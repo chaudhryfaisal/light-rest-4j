@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Light 4J - A fast, lightweight Java microservices framework</title>
+    <link>https://networknt.github.io/light-4j/</link>
+    <description>Recent content on Light 4J - A fast, lightweight Java microservices framework</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Tue, 06 Jun 2017 09:37:52 -0400</lastBuildDate>
+    
+	<atom:link href="https://networknt.github.io/light-4j/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Introduction</title>
+      <link>https://networknt.github.io/light-4j/</link>
+      <pubDate>Tue, 06 Jun 2017 09:37:52 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-4j/</guid>
+      <description>This is the entry page.</description>
+    </item>
+    
+  </channel>
+</rss>
