@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Tutorials - Light Rest 4J</title>
+    <title>Middleware Handlers - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.20.6" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/middleware/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/middleware/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Tutorials
+        Middleware Handlers
       </div>
     </div>
 
@@ -234,11 +234,14 @@
 
 
 
-<a  title="Middleware" href="https://networknt.github.io/light-rest-4j/middleware/">
+<a class="current" title="Middleware" href="https://networknt.github.io/light-rest-4j/middleware/">
 	
 	Middleware
 </a>
 
+
+<ul id="scrollspy">
+</ul>
 
 
   
@@ -306,14 +309,11 @@
 
 
 
-<a class="current" title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
+<a  title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
 	
 	Tutorial
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -464,18 +464,23 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Tutorials </h1>
+			<h1>Middleware Handlers </h1>
 
-			<p>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.</p>
+			<p>The light-rest-4j framework has the following middleware handlers designed around OpenAPI specification
+(previously named swagger specification).</p>
 
 <ul>
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/microservices/">How to build, test and deploy microserivces</a></p></li>
+<li><p><a href="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/">swagger-meta</a> is a
+middleware that load swagger at runtime and parse it based on the request uri and method. The
+result map is attached to the exchange for subsequent handlers to use.</p></li>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/database/">How to access database in microservices</a></p></li>
+<li><p><a href="https://networknt.github.io/light-rest-4j/middleware/swagger-security/">swagger-security</a>
+Oauth2 JWT token verification distributed in every microservice. Also, there is an OAuth2
+server based on light-4j released <a href="https://github.com/networknt/light-oauth2">here</a></p></li>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/discovery/">How to register and discover services</a></p></li>
-
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/ms-chain/">How to implement Chain Pattern of microservices</a></p></li>
+<li><p><a href="https://networknt.github.io/light-rest-4j/middleware/swagger-validator/">swagger-validator</a>
+validates request based on the swagger.json for uri parameters, query parameters and body
+which is based on <a href="https://github.com/networknt/json-schema-validator">json-schema-validator</a></p></li>
 </ul>
 
 
@@ -495,34 +500,18 @@
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/" title="Middleware Handlers">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Middleware Handlers
-            </div>
-          </div>
-        </div>
-      </a>
-  
   </div>
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/" title="Introduction">
+      <a href="https://networknt.github.io/light-rest-4j/tutorial/" title="Tutorials">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Introduction
+              Tutorials
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

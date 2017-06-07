@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Tutorials - Light Rest 4J</title>
+    <title>Swagger Security - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.20.6" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/middleware/swagger-security/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/middleware/swagger-security/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Tutorials
+        Swagger Security
       </div>
     </div>
 
@@ -306,14 +306,11 @@
 
 
 
-<a class="current" title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
+<a  title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
 	
 	Tutorial
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -464,19 +461,27 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Tutorials </h1>
+			<h1>Swagger Security </h1>
 
-			<p>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.</p>
+			
 
-<ul>
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/microservices/">How to build, test and deploy microserivces</a></p></li>
+<p>This handler is part of the <a href="https://github.com/networknt/light-rest-4j">light-rest-4j</a>
+which is built on top of light-4j but focused on RESTful API only.</p>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/database/">How to access database in microservices</a></p></li>
+<p>It supports OAuth2 with JWT token distributed verification and can be extended to
+other authentication and authorization approaches.</p>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/discovery/">How to register and discover services</a></p></li>
+<h1 id="jwtverifyhandler">JwtVerifyHandler</h1>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/ms-chain/">How to implement Chain Pattern of microservices</a></p></li>
-</ul>
+<p>This is the handler that is injected during server start up if security.json
+enableVerifyJwt is true. It does further scope verification if enableVerifyScope
+is true against swagger specification.</p>
+
+<h1 id="distributed-jwt-verification">Distributed JWT verification</h1>
+
+<p>Unlike simple web token, the resource server has to contact Authorization server
+to validate the bearer token. JWT can be verified by resource server as long as
+the token signing certificate is available at resource server.</p>
 
 
 			<aside class="copyright" role="note">
@@ -495,7 +500,7 @@
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/" title="Middleware Handlers">
+      <a href="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/" title="Swagger Meta">
         <span class="direction">
           Previous
         </span>
@@ -505,7 +510,7 @@
           </div>
           <div class="stretch">
             <div class="title">
-              Middleware Handlers
+              Swagger Meta
             </div>
           </div>
         </div>
@@ -515,14 +520,14 @@
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/" title="Introduction">
+      <a href="https://networknt.github.io/light-rest-4j/tutorial/ms-chain/" title="Chain Pattern Microservices">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Introduction
+              Chain Pattern Microservices
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

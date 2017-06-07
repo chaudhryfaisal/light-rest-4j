@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Tutorials - Light Rest 4J</title>
+    <title>Swagger Validator - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.20.6" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/middleware/swagger-validator/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/middleware/swagger-validator/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Tutorials
+        Swagger Validator
       </div>
     </div>
 
@@ -306,14 +306,11 @@
 
 
 
-<a class="current" title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
+<a  title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
 	
 	Tutorial
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -464,19 +461,83 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Tutorials </h1>
+			<h1>Swagger Validator </h1>
 
-			<p>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.</p>
+			
+
+<p>This handler is part of the <a href="https://github.com/networknt/light-rest-4j">light-rest-4j</a>
+which is built on top of light-4j but focused on RESTful API only.</p>
+
+<p>It encourages design driven implementation so swagger specification should be
+done before the implementation starts. With the <a href="https://github.com/networknt/light-codegen">light-codegen</a>
+light-4j generator, the server stub can be generated and start running within minutes.
+However, we cannot rely on generator for validation as specification will be
+changed along the life cycle of the API. This is why we have provided a validator
+that works on top of the specification at runtime. In this way, the generator
+should only be used once and the validator will take the latest specification and
+validate according the specification at runtime.</p>
+
+<h1 id="fail-fast">Fail fast</h1>
+
+<p>As you may noticed that our Status object only supports one code and message.
+This is the indication the framework validation is designed as fail fast.
+Whenever there is an error, the server will stop processing the request and
+return the error to the consumer immediately. There are two reasons on this
+design:</p>
+
+<ol>
+<li>Security - you don&rsquo;t want to return so many errors if someone is trying
+to hack your server.</li>
+<li>Performance - you don&rsquo;t want to spend resource to handle invalid request
+to the next step.</li>
+</ol>
+
+<h1 id="validatorhandler">ValidatorHandler</h1>
+
+<p>This is the entry point of the validator and it is injected during server
+start up if validator.yml enableValidator is true. By default, only
+RequestValidator will be called. However, ResponseValidator can be enabled
+by setting enableResponseValidator to true in validator.yml.</p>
+
+<h1 id="requestvalidator">RequestValidator</h1>
+
+<p>It will validate the following:</p>
 
 <ul>
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/microservices/">How to build, test and deploy microserivces</a></p></li>
-
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/database/">How to access database in microservices</a></p></li>
-
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/discovery/">How to register and discover services</a></p></li>
-
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/ms-chain/">How to implement Chain Pattern of microservices</a></p></li>
+<li>uri</li>
+<li>method</li>
+<li>header</li>
+<li>query parameters</li>
+<li>path parameters</li>
+<li>body if available</li>
 </ul>
+
+<p>When necessary, <a href="https://github.com/networknt/json-schema-validator">json-schema-validator</a>
+will be called to do json schema validation.</p>
+
+<h1 id="responsevalidator">ResponseValidator</h1>
+
+<p>It will validate the following:</p>
+
+<ul>
+<li>header</li>
+<li>response code</li>
+<li>body if available</li>
+</ul>
+
+<p>when necessary, <a href="https://github.com/networknt/json-schema-validator">json-schema-validator</a>
+will be called.</p>
+
+<h1 id="schemavalidator">SchemaValidator</h1>
+
+<p>If schema is defined in swagger.json, then the <a href="https://github.com/networknt/json-schema-validator">json-schema-validator</a>
+will be called to validate the input against a json schema defined in draft v4.</p>
+
+<h1 id="test">Test</h1>
+
+<p>In order to test validator, the test suite starts a light-4j server and serves
+petstore api for testing. It is a demo on how to unit test your API during
+development.</p>
 
 
 			<aside class="copyright" role="note">
@@ -495,7 +556,7 @@
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/" title="Middleware Handlers">
+      <a href="https://networknt.github.io/light-rest-4j/tutorial/database/" title="Restful Database Access Tutorial">
         <span class="direction">
           Previous
         </span>
@@ -505,7 +566,7 @@
           </div>
           <div class="stretch">
             <div class="title">
-              Middleware Handlers
+              Restful Database Access Tutorial
             </div>
           </div>
         </div>
@@ -515,14 +576,14 @@
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/" title="Introduction">
+      <a href="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/" title="Swagger Meta">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Introduction
+              Swagger Meta
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

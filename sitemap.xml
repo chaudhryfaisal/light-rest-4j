@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://networknt.github.io/light-rest-4j/middleware/</loc>
+    <lastmod>2017-06-07T19:03:07-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://networknt.github.io/light-rest-4j/tutorial/</loc>
     <lastmod>2017-06-07T15:07:41-04:00</lastmod>
   </url>
@@ -22,6 +27,21 @@
   </url>
   
   <url>
+    <loc>https://networknt.github.io/light-rest-4j/middleware/swagger-validator/</loc>
+    <lastmod>2016-10-12T19:13:19-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://networknt.github.io/light-rest-4j/middleware/swagger-meta/</loc>
+    <lastmod>2016-10-12T19:10:34-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://networknt.github.io/light-rest-4j/middleware/swagger-security/</loc>
+    <lastmod>2016-10-12T19:07:43-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://networknt.github.io/light-rest-4j/tutorial/ms-chain/</loc>
     <lastmod>2016-10-09T08:01:56-04:00</lastmod>
   </url>
@@ -38,7 +58,13 @@
   
   <url>
     <loc>https://networknt.github.io/light-rest-4j/</loc>
-    <lastmod>2017-06-07T15:07:41-04:00</lastmod>
+    <lastmod>2017-06-07T19:03:07-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://networknt.github.io/light-rest-4j/middleware/</loc>
+    <lastmod>2017-06-07T19:03:07-04:00</lastmod>
     <priority>0</priority>
   </url>
   

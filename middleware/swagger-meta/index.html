@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Tutorials - Light Rest 4J</title>
+    <title>Swagger Meta - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.20.6" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Tutorials
+        Swagger Meta
       </div>
     </div>
 
@@ -306,14 +306,11 @@
 
 
 
-<a class="current" title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
+<a  title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
 	
 	Tutorial
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -464,19 +461,49 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Tutorials </h1>
+			<h1>Swagger Meta </h1>
 
-			<p>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.</p>
+			
 
-<ul>
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/microservices/">How to build, test and deploy microserivces</a></p></li>
+<h1 id="introduction">Introduction</h1>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/database/">How to access database in microservices</a></p></li>
+<p>This handler is part of the <a href="https://github.com/networknt/light-rest-4j">light-rest-4j</a>
+which is built on top of light-4j but focused on RESTful API only.</p>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/discovery/">How to register and discover services</a></p></li>
+<p>It is designed based on swagger specification so it is our best interest to utilize
+the swagger.json to its full potential. Currently there are two components are using
+the swagger specification during runtime.</p>
 
-<li><p><a href="https://networknt.github.io/light-rest-4j/tutorial/ms-chain/">How to implement Chain Pattern of microservices</a></p></li>
-</ul>
+<ol>
+<li><a href="https://networknt.github.io/light-4j/middleware/swagger-security/">swagger-security</a> -
+Verify scope in the JWT token against scope defined in swagger specification if
+scope verification is true.</li>
+<li><a href="https://networknt.github.io/light-4j/middleware/swagger-validator/">swagger-validator</a> -
+Validate request and response based on the definition in swagger specification for
+the uri and method.</li>
+</ol>
+
+<p>As you have noticed, both components need to have swagger operation available
+based on the current request uri and method combination.</p>
+
+<h1 id="cache">Cache</h1>
+
+<p>A specification file swagger.json should be in the config folder of your API
+implementation and it will be loaded to memory with SwaggerHelper during server
+start up. It will be cached in memory until the server is restarted.</p>
+
+<h1 id="normalized-path">Normalized Path</h1>
+
+<p>In order to match the incoming request path to the paths defined in the swagger
+specification, all paths are normalized before matching action. SwaggerHelper
+provides an API to match the request path to the paths in swagger specification.</p>
+
+<h1 id="swaggerhandler">SwaggerHandler</h1>
+
+<p>This is an HttpHandler to parse the swagger spec based on the request uri and
+method and attach an SwaggerOperation object to the exchange. The swagger-security
+and swagger-validator modules are using it to do their jobs without parsing the
+swagger.json second time.</p>
 
 
 			<aside class="copyright" role="note">
@@ -495,7 +522,7 @@
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/" title="Middleware Handlers">
+      <a href="https://networknt.github.io/light-rest-4j/middleware/swagger-validator/" title="Swagger Validator">
         <span class="direction">
           Previous
         </span>
@@ -505,7 +532,7 @@
           </div>
           <div class="stretch">
             <div class="title">
-              Middleware Handlers
+              Swagger Validator
             </div>
           </div>
         </div>
@@ -515,14 +542,14 @@
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/" title="Introduction">
+      <a href="https://networknt.github.io/light-rest-4j/middleware/swagger-security/" title="Swagger Security">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Introduction
+              Swagger Security
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

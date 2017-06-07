@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Middlewares on Light Rest 4J</title>
+    <link>https://networknt.github.io/light-rest-4j/middleware/</link>
+    <description>Recent content in Middlewares on Light Rest 4J</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Wed, 07 Jun 2017 19:03:07 -0400</lastBuildDate>
+    
+	<atom:link href="https://networknt.github.io/light-rest-4j/middleware/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Middleware Handlers</title>
+      <link>https://networknt.github.io/light-rest-4j/middleware/</link>
+      <pubDate>Wed, 07 Jun 2017 19:03:07 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/middleware/</guid>
+      <description>The light-rest-4j framework has the following middleware handlers designed around OpenAPI specification (previously named swagger specification).
+ swagger-meta is a middleware that load swagger at runtime and parse it based on the request uri and method. The result map is attached to the exchange for subsequent handlers to use.
+ swagger-security Oauth2 JWT token verification distributed in every microservice. Also, there is an OAuth2 server based on light-4j released here</description>
+    </item>
+    
+    <item>
+      <title>Swagger Validator</title>
+      <link>https://networknt.github.io/light-rest-4j/middleware/swagger-validator/</link>
+      <pubDate>Wed, 12 Oct 2016 19:13:19 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/middleware/swagger-validator/</guid>
+      <description>This handler is part of the light-rest-4j which is built on top of light-4j but focused on RESTful API only.
+It encourages design driven implementation so swagger specification should be done before the implementation starts. With the light-codegen light-4j generator, the server stub can be generated and start running within minutes. However, we cannot rely on generator for validation as specification will be changed along the life cycle of the API.</description>
+    </item>
+    
+    <item>
+      <title>Swagger Meta</title>
+      <link>https://networknt.github.io/light-rest-4j/middleware/swagger-meta/</link>
+      <pubDate>Wed, 12 Oct 2016 19:10:34 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/middleware/swagger-meta/</guid>
+      <description>Introduction This handler is part of the light-rest-4j which is built on top of light-4j but focused on RESTful API only.
+It is designed based on swagger specification so it is our best interest to utilize the swagger.json to its full potential. Currently there are two components are using the swagger specification during runtime.
+ swagger-security - Verify scope in the JWT token against scope defined in swagger specification if scope verification is true.</description>
+    </item>
+    
+    <item>
+      <title>Swagger Security</title>
+      <link>https://networknt.github.io/light-rest-4j/middleware/swagger-security/</link>
+      <pubDate>Wed, 12 Oct 2016 19:07:43 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/middleware/swagger-security/</guid>
+      <description>This handler is part of the light-rest-4j which is built on top of light-4j but focused on RESTful API only.
+It supports OAuth2 with JWT token distributed verification and can be extended to other authentication and authorization approaches.
+JwtVerifyHandler This is the handler that is injected during server start up if security.json enableVerifyJwt is true. It does further scope verification if enableVerifyScope is true against swagger specification.
+Distributed JWT verification Unlike simple web token, the resource server has to contact Authorization server to validate the bearer token.</description>
+    </item>
+    
+  </channel>
+</rss>
