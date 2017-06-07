@@ -13,12 +13,17 @@
     
     
     <item>
-      <title>index</title>
+      <title>Tutorials</title>
       <link>https://networknt.github.io/light-rest-4j/tutorial/</link>
       <pubDate>Wed, 07 Jun 2017 15:07:41 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/tutorial/</guid>
-      <description></description>
+      <description>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.
+ How to build, test and deploy microserivces
+ How to access database in microservices
+ How to register and discover services
+ How to implement Chain Pattern of microservices
+  </description>
     </item>
     
     <item>
