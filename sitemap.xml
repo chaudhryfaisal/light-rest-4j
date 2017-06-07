@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://networknt.github.io/light-rest-4j/other/</loc>
+    <lastmod>2017-06-07T19:10:31-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://networknt.github.io/light-rest-4j/middleware/</loc>
     <lastmod>2017-06-07T19:03:07-04:00</lastmod>
   </url>
@@ -58,13 +63,19 @@
   
   <url>
     <loc>https://networknt.github.io/light-rest-4j/</loc>
-    <lastmod>2017-06-07T19:03:07-04:00</lastmod>
+    <lastmod>2017-06-07T19:10:31-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://networknt.github.io/light-rest-4j/middleware/</loc>
     <lastmod>2017-06-07T19:03:07-04:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://networknt.github.io/light-rest-4j/other/</loc>
+    <lastmod>2017-06-07T19:10:31-04:00</lastmod>
     <priority>0</priority>
   </url>
   
