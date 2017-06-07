@@ -7,10 +7,22 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
-    <lastBuildDate>Wed, 07 Jun 2017 19:10:31 -0400</lastBuildDate>
+    <lastBuildDate>Wed, 07 Jun 2017 19:48:38 -0400</lastBuildDate>
     
 	<atom:link href="https://networknt.github.io/light-rest-4j/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Tools</title>
+      <link>https://networknt.github.io/light-rest-4j/tool/</link>
+      <pubDate>Wed, 07 Jun 2017 19:48:38 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/tool/</guid>
+      <description>There are so many tools that help us to build restful microservices and here is a small list.
+ Swagger Editor is used to create and update swagger specifications.
+ Swagger CLI to validate, merge and convert swagger specification files.
+  </description>
+    </item>
     
     <item>
       <title>Other Components</title>
@@ -128,6 +140,27 @@ Distributed JWT verification Unlike simple web token, the resource server has to
       
       <guid>https://networknt.github.io/light-rest-4j/tutorial/microservices/</guid>
       <description>Introduction These days light weight container like Docker is getting traction, more and more API services are developed for docker container and deployed to the cloud. In this environment, traditional heavy weight containers like Java EE and Spring are losing ground as it doesn&amp;rsquo;t make sense to have a heavy weight container wrapped with a light weight docker container. Docker and container orchestration tools like Kubernetes and Docker Swarm are replacing all the functionalities Java EE provides without hogging resources.</description>
+    </item>
+    
+    <item>
+      <title>Swagger cli to bundle and validate specification files</title>
+      <link>https://networknt.github.io/light-rest-4j/tool/swagger-cli/</link>
+      <pubDate>Sat, 08 Oct 2016 22:14:47 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/tool/swagger-cli/</guid>
+      <description>Note: that you don&amp;rsquo;t need this tool if your specification file is self contained yaml file in swagger-editor. You can export into json format and it is validated already during the export process.
+Introduction When editing swagger specification file, naturally we will be using yaml format as it is very easy to read and manipulate. Also, we might extract common definitions into separate files so that there is no duplications for multiple APIs.</description>
+    </item>
+    
+    <item>
+      <title>Swagger Editor for OpenAPI Specification</title>
+      <link>https://networknt.github.io/light-rest-4j/tool/swagger-editor/</link>
+      <pubDate>Sat, 08 Oct 2016 22:14:33 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/tool/swagger-editor/</guid>
+      <description>Introduction Swagger is a simple yet powerful representation of your RESTful API. With the largest ecosystem of API tooling on the planet, thousands of developers are supporting Swagger in almost every modern programming language and deployment environment. With a Swagger-enabled API, you get interactive documentation, client SDK generation and discoverability.
+Swagger was created to help fulfill the promise of APIs and is 100% open source software.
+The Swagger specification defines a set of files required to describe an API.</description>
     </item>
     
   </channel>

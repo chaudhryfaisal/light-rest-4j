@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Other Components - Light Rest 4J</title>
+    <title>Swagger cli to bundle and validate specification files - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.20.6" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/other/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tool/swagger-cli/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/other/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tool/swagger-cli/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Other Components
+        Swagger cli to bundle and validate specification files
       </div>
     </div>
 
@@ -252,14 +252,11 @@
 
 
 
-<a class="current" title="Other Component" href="https://networknt.github.io/light-rest-4j/other/">
+<a  title="Other Component" href="https://networknt.github.io/light-rest-4j/other/">
 	
 	Other Component
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -464,12 +461,107 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Other Components </h1>
+			<h1>Swagger cli to bundle and validate specification files </h1>
 
-			<p>This section lists all other components that are not middleware handlers for
-light-rest-4j framework.</p>
+			
 
-<p>Currently, there is no other components but something might be added later on.</p>
+<p>Note: that you don&rsquo;t need this tool if your specification file is self contained yaml file in
+swagger-editor. You can export into json format and it is validated already during the export
+process.</p>
+
+<h3 id="introduction">Introduction</h3>
+
+<p>When editing swagger specification file, naturally we will be using yaml format as it is very
+easy to read and manipulate. Also, we might extract common definitions into separate files
+so that there is no duplications for multiple APIs. For the light-codegen, however, it requires
+one single swagger.json as model input. To generate a single json formatted specification file,
+we can use the Swagger 2.0 command-line tool.</p>
+
+<ul>
+<li>Supports multi-file APIs via $ref pointers</li>
+<li>Validate Swagger 2.0 APIs in JSON or YAML format</li>
+<li>Bundle multiple Swagger files into one combined Swagger file</li>
+<li>Built-in HTTP server to serve your REST API</li>
+</ul>
+
+<h3 id="installation">Installation</h3>
+
+<p>The tool can be found at the following location: <a href="https://www.npmjs.com/package/swagger-cli">swagger-cli</a></p>
+
+<p>Install using npm:</p>
+
+<pre><code class="language-shell">npm install -g swagger-cli
+</code></pre>
+
+<h3 id="general-usage">General Usage</h3>
+
+<p>swagger <command> [options] <filename></p>
+
+<p>Commands:
+* validate: Validates a Swagger API against the Swagger 2.0 schema and spec
+* bundle: Bundles a multi-file Swagger API into a single file
+* serve: Serves a Swagger API via the built-in HTTP REST server</p>
+
+<p>Options:
+* -h, &ndash;help: Show help for any command
+* -V, &ndash;version: Output the CLI version number
+* -d, &ndash;debug [filter]: Show debug output, optionally filtered (ex.: &ldquo;<em>&rdquo;, &ldquo;swagger:</em>&rdquo;, etc.)</p>
+
+<p>As we have a <a href="https://github.com/networknt/model-config">repo</a> of model and config for
+<a href="https://github.com/networknt/light-codegen">light-codegen</a>. It would be easier to provide
+an example based on our folder structure.</p>
+
+<h4 id="command-line">Command line</h4>
+
+<p>If you prefer to run the commands individually, please see the sequence listed below:</p>
+
+<pre><code class="language-shell"># clone the model-config GIT repository
+git clone git@github.com:networknt/model-config.git
+
+# switch to the rest folder
+cd model-config/rest
+
+# switch to one of the API folders
+# ex.: cd petstore
+cd &lt;api name&gt;
+
+#copy common definitions to the api folder
+cp -r ../common .
+
+# execute the bundling functionlity
+swagger bundle -o swagger.json -r swagger.yaml
+
+# validate the definition against the Open API spec
+swagger validate swagger.json
+
+# clean-up
+rm -r common
+
+# use the generated swagger.json file with the swagger-codegen project to generate server stubs
+</code></pre>
+
+<h4 id="script">Script</h4>
+
+<p>The above command line steps are very easy to understand but it is not the most convenient
+way to bundle and validate yaml files. Here is another way that leverage a script in
+model-config/rest folder.</p>
+
+<p>Note: the script assume that the common definition is defined in common folder and all API
+specification are defined in a folder name as the API name.</p>
+
+<h5 id="run-the-bundle-sh-script-to-bundle-and-validate">Run the bundle.sh script to bundle and validate</h5>
+
+<pre><code class="language-shell"># clone the model-config repository
+git clone git@github.com:networknt/model-config.git
+
+# switch to the model-config/rest folder
+cd model-config/rest
+
+# run the bundle script
+# ./bundle.sh &lt;api name&gt;
+# ex.: ./bundle.sh petstore
+./bundle.sh &lt;api name&gt;
+</code></pre>
 
 
 			<aside class="copyright" role="note">
@@ -488,7 +580,7 @@ light-rest-4j framework.</p>
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/tool/" title="Tools">
+      <a href="https://networknt.github.io/light-rest-4j/tutorial/microservices/" title="Microservices">
         <span class="direction">
           Previous
         </span>
@@ -498,7 +590,7 @@ light-rest-4j framework.</p>
           </div>
           <div class="stretch">
             <div class="title">
-              Tools
+              Microservices
             </div>
           </div>
         </div>
@@ -508,14 +600,14 @@ light-rest-4j framework.</p>
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/" title="Middleware Handlers">
+      <a href="https://networknt.github.io/light-rest-4j/tool/swagger-editor/" title="Swagger Editor for OpenAPI Specification">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Middleware Handlers
+              Swagger Editor for OpenAPI Specification
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">
