@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
-    <lastBuildDate>Wed, 07 Jun 2017 19:48:38 -0400</lastBuildDate>
+    <lastBuildDate>Fri, 16 Jun 2017 22:45:02 -0400</lastBuildDate>
     
 	<atom:link href="https://networknt.github.io/light-rest-4j/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Aggregate Pattern Microservices</title>
+      <link>https://networknt.github.io/light-rest-4j/tutorial/ms_aggregate/</link>
+      <pubDate>Fri, 16 Jun 2017 22:45:02 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/tutorial/ms_aggregate/</guid>
+      <description>This is another pattern that is very useful for serving mobile native applications. The mobile app just send one request to the aggregate API and it will call multiple APIs to gether info and send back to the consumer. This avoid mobile device to call multiple APIs to get data on a slow network.
+This tutorial shows you how to build 4 services with one of them the aggregator. And it will be the foundation for our microserives benchmarks.</description>
+    </item>
     
     <item>
       <title>Tools</title>
@@ -52,10 +62,10 @@ Currently, there is no other components but something might be added later on.</
       
       <guid>https://networknt.github.io/light-rest-4j/tutorial/</guid>
       <description>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.
- How to build, test and deploy microserivces
  How to access database in microservices
  How to register and discover services
  How to implement Chain Pattern of microservices
+ How to implement Aggregate Pattern of microservices
   </description>
     </item>
     
