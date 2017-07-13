@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Aggregate Pattern Microservices - Light Rest 4J</title>
+    <title>Branch Pattern Microservices - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.21-DEV" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/ms_aggregate/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/ms-branch/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/ms_aggregate/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/ms-branch/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Aggregate Pattern Microservices
+        Branch Pattern Microservices
       </div>
     </div>
 
@@ -461,25 +461,21 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Aggregate Pattern Microservices </h1>
+			<h1>Branch Pattern Microservices </h1>
 
 			
 
-<p>This is another pattern that is very useful for serving mobile native applications. The mobile
-app just send one request to the aggregate API and it will call multiple APIs to gether info
-and send back to the consumer. This avoid mobile device to call multiple APIs to get data on a
-slow network.</p>
+<p>This is another pattern that is very useful which is a hybrid of chain pattern and aggregate
+pattern.</p>
 
-<p>This tutorial shows you how to build 4 services with one of them the aggregator. And it will
-be the foundation for our microserives benchmarks.</p>
+<p>This tutorial shows you how to build 4 services in branch pattern.</p>
 
 <pre><code>
-API A -&gt; API B
-      -&gt; API C
-      -&gt; API D
+API A -&gt; API B -&gt; API D
+          -&gt; API C
 </code></pre>
 
-<p>API A calls API B, API C and API D to fulfill its request.</p>
+<p>API A calls API B and API C. API B calls API D.</p>
 
 <h2 id="prepare-workspace">Prepare workspace</h2>
 
@@ -498,11 +494,11 @@ git clone git@github.com:networknt/light-docker.git
 
 </code></pre>
 
-<p>As we are going to regenerate API A, B, C and D, let&rsquo;s rename ms_aggregate folder from
+<p>As we are going to regenerate API A, B, C and D, let&rsquo;s rename ms_branch folder from
 light-example-4j.</p>
 
 <pre><code>cd ~/networknt/light-example-4j/rest
-mv ms_aggregate ms_aggregate.bak
+mv ms_branch ms_branch.bak
 cd ~/networknt
 </code></pre>
 
@@ -530,9 +526,8 @@ on how to use the editor, let&rsquo;s create four API specifications in model-co
 
 <p>API A will call API B, API C and API D</p>
 
-<pre><code>API A -&gt; API B 
-      -&gt; API C 
-      -&gt; API D
+<pre><code>API A -&gt; API B -&gt; API D 
+          -&gt; API C 
 </code></pre>
 
 <p>Here is the API A swagger.yaml and others can be found at
@@ -597,7 +592,7 @@ scope api_a.r or scope api_a.w to access the endpoint /data.</p>
 <h2 id="light-codegen">light-codegen</h2>
 
 <p>Now we have four API swagger.yaml files available. Let&rsquo;s use light-codegen
-to start four projects in light-example-4j/rest/ms_aggregate. In normal API build, you
+to start four projects in light-example-4j/rest/ms_branch. In normal API build, you
 should create a repo for each API. For us, we have to user light-example-4j for all the
 examples and tutorial for easy management in networknt github organization.</p>
 
@@ -605,7 +600,7 @@ examples and tutorial for easy management in networknt github organization.</p>
 
 <p>The project is cloned to the local already during the prepare stage. Let&rsquo;s build it.</p>
 
-<pre><code>cd light-codegen
+<pre><code>cd ~/networknt/light-codegen
 mvn clean install -DskipTests
 </code></pre>
 
@@ -652,16 +647,16 @@ model-config, light-example-4j and light-codegen are in the same working
 directory ~/networknt and you are in ~/networknt/light-codegen now.</p>
 
 <pre><code>cd ~/networknt/light-codegen
-java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_aggregate/api_a/generated -m ../model-config/rest/api_a/1.0.0/swagger.json -c ../model-config/rest/api_a/1.0.0/config.json
+java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_branch/api_a/generated -m ../model-config/rest/api_a/1.0.0/swagger.json -c ../model-config/rest/api_a/1.0.0/config.json
 </code></pre>
 
 <h4 id="build-and-run-the-mock-api">Build and run the mock API</h4>
 
-<p>And now you have a new project created in light-example-4j/rest/ms_aggregate/api_a/generated.
+<p>And now you have a new project created in light-example-4j/rest/ms_branch/api_a/generated.
 Let&rsquo;s build it and run the test cases. If everything is OK, start the server.</p>
 
 <pre><code>cd ..
-cd light-example-4j/rest/ms_aggregate/api_a/generated
+cd light-example-4j/rest/ms_branch/api_a/generated
 mvn clean install exec:exec
 </code></pre>
 
@@ -687,9 +682,9 @@ the above steps to generate other APIs. Make sure you are in light_codegen
 directory.</p>
 
 <pre><code>cd ~/networknt/light-codegen
-java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_aggregate/api_b/generated -m ../model-config/rest/api_b/1.0.0/swagger.json -c ../model-config/rest/api_b/1.0.0/config.json
-java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_aggregate/api_c/generated -m ../model-config/rest/api_c/1.0.0/swagger.json -c ../model-config/rest/api_c/1.0.0/config.json
-java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_aggregate/api_d/generated -m ../model-config/rest/api_d/1.0.0/swagger.json -c ../model-config/rest/api_d/1.0.0/config.json
+java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_branch/api_b/generated -m ../model-config/rest/api_b/1.0.0/swagger.json -c ../model-config/rest/api_b/1.0.0/config.json
+java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_branch/api_c/generated -m ../model-config/rest/api_c/1.0.0/swagger.json -c ../model-config/rest/api_c/1.0.0/config.json
+java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ../light-example-4j/rest/ms_branch/api_d/generated -m ../model-config/rest/api_d/1.0.0/swagger.json -c ../model-config/rest/api_d/1.0.0/config.json
 </code></pre>
 
 <p>Now you have four APIs generated from four OpenAPI specifications. Let&rsquo;s check
@@ -698,7 +693,7 @@ this step.</p>
 
 <pre><code>cd ../light-example-4j
 git add .
-git commit -m &quot;checkin 4 apis&quot;
+git commit -m &quot;checkin 4 apis in ms_branch&quot;
 git push origin master
 </code></pre>
 
@@ -706,37 +701,38 @@ git push origin master
 
 <p>Now these APIs are working if you start them and they will output the mock responses
 generated based on the API specifications. Let&rsquo;s take a look at the API handler itself
-and update it based on our business logic, you can call API A and subsequently all other
-APIs will be called by API A.</p>
+and update it based on our business logic, you can call API A and subsequently all API B and
+API C will be called by API A. And API D will be called by API B.</p>
 
 <h4 id="prepare-environment">Prepare Environment</h4>
 
-<p>Before starting this step, let&rsquo;s create a folder called httpaggregate in each sub folder under
-ms_aggregate and copy everything from generated folder to the httpaggregate. We are going to update
-httpaggregate folder to have business logic to call another api and change the configuration
-to listen to different port. You can compare between generated and httpaggregate to see what has
+<p>Before starting this step, let&rsquo;s create a folder called httpbranch in each sub folder under
+ms_branch and copy everything from generated folder to the httpbranch. We are going to update
+httpbranch folder to have business logic to call other API(s) and change the configuration
+to listen to different port. You can compare between generated and httpbranch to see what has
 been changed later on.</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_aggregate/api_a
-cp -r generated httpaggregate
-cd ~/networknt/light-example-4j/rest/ms_aggregate/api_b
-cp -r generated httpaggregate
-cd ~/networknt/light-example-4j/rest/ms_aggregate/api_c
-cp -r generated httpaggregate
-cd ~/networknt/light-example-4j/rest/ms_aggregate/api_d
-cp -r generated httpaggregate
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_branch/api_a
+cp -r generated httpbranch
+cd ~/networknt/light-example-4j/rest/ms_branch/api_b
+cp -r generated httpbranch
+cd ~/networknt/light-example-4j/rest/ms_branch/api_c
+cp -r generated httpbranch
+cd ~/networknt/light-example-4j/rest/ms_branch/api_d
+cp -r generated httpbranch
 
 </code></pre>
 
-<p>Now we have httpaggregate folder copied from generated and all updates in this step will be
-in httpaggregate folder.</p>
+<p>Now we have httpbranch folder copied from generated and all updates in this step will be
+in httpbranch folder.</p>
 
 <h4 id="api-d">API D</h4>
 
 <p>Let&rsquo;s take a look at the PathHandlerProvider.java in
-ms_aggregate/api_d/httpaggregate/src/main/java/com/networknt/apid</p>
+ms_branch/api_d/httpbranch/src/main/java/com/networknt/apid</p>
 
-<pre><code>package com.networknt.apid;
+<pre><code>
+package com.networknt.apid;
 
 import com.networknt.config.Config;
 import com.networknt.server.HandlerProvider;
@@ -776,8 +772,7 @@ disabled in most of the case, but Kubernetes needs it.</p>
 <p>The generated handler is named &ldquo;DataGetHandler&rdquo; and it returns example response defined
 in swagger specification. Here is the generated handler code.</p>
 
-<pre><code>
-package com.networknt.apid.handler;
+<pre><code>package com.networknt.apid.handler;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -823,7 +818,7 @@ public class DataGetHandler implements HttpHandler {
 
 <p>Now, let&rsquo;s build it and start the server.</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_aggregate/api_d/httpaggregate
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_branch/api_d/httpbranch
 mvn clean install exec:exec
 </code></pre>
 
@@ -848,7 +843,7 @@ certificate and we don&rsquo;t want to verify the domain.</p>
 <h4 id="api-c">API C</h4>
 
 <p>Let&rsquo;s leave API D running and update API C DataGetHandler in
-~/networknt/light-example-4j/rest/ms_aggregate/api_c/httpaggregate</p>
+~/networknt/light-example-4j/rest/ms_branch/api_c/httpbranch</p>
 
 <pre><code>package com.networknt.apic.handler;
 
@@ -876,7 +871,7 @@ public class DataGetHandler implements HttpHandler {
 
 <p>Start API C server and test the endpoint /v1/data</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_aggregate/api_c/httpaggregate
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_branch/api_c/httpbranch
 mvn clean install exec:exec
 </code></pre>
 
@@ -904,30 +899,66 @@ mvn clean install exec:exec
 
 <pre><code>package com.networknt.apib.handler;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.networknt.client.Client;
 import com.networknt.config.Config;
+import com.networknt.exception.ClientException;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DataGetHandler implements HttpHandler {
+    static String CONFIG_NAME = &quot;api_b&quot;;
+    static String apidUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_d_endpoint&quot;);
+
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        List&lt;String&gt; messages = new ArrayList&lt;String&gt;();
-        messages.add(&quot;API B: Message 1&quot;);
-        messages.add(&quot;API B: Message 2&quot;);
-        exchange.getResponseSender().send(Config.getInstance().getMapper().writeValueAsString(messages));
+        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+        try {
+            CloseableHttpClient client = Client.getInstance().getSyncClient();
+            HttpGet httpGet = new HttpGet(apidUrl);
+            //Client.getInstance().propagateHeaders(httpGet, exchange);
+            CloseableHttpResponse response = client.execute(httpGet);
+            int responseCode = response.getStatusLine().getStatusCode();
+            if(responseCode != 200){
+                throw new Exception(&quot;Failed to call API D: &quot; + responseCode);
+            }
+            List&lt;String&gt; apidList = Config.getInstance().getMapper().readValue(response.getEntity().getContent(),
+                    new TypeReference&lt;List&lt;String&gt;&gt;(){});
+            list.addAll(apidList);
+        } catch (ClientException e) {
+            throw new Exception(&quot;Client Exception: &quot;, e);
+        } catch (IOException e) {
+            throw new Exception(&quot;IOException:&quot;, e);
+        }
+        // now add API B specific messages
+        list.add(&quot;API B: Message 1&quot;);
+        list.add(&quot;API B: Message 2&quot;);
+        exchange.getResponseSender().send(Config.getInstance().getMapper().writeValueAsString(list));
     }
 }
 </code></pre>
 
+<p>Configuration file for API D url.</p>
+
+<p>api_b.yml</p>
+
+<pre><code>api_d_endpoint: http://localhost:7004/v1/data
+
+</code></pre>
+
 <p>Start API B server and test the endpoint /v1/data</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_aggregate/api_b/httpaggregate
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_branch/api_b/httpbranch
 mvn clean install exec:exec
 </code></pre>
 
@@ -938,7 +969,7 @@ mvn clean install exec:exec
 
 <p>And the result is</p>
 
-<pre><code>[&quot;API D: Message 1&quot;,&quot;API D: Message 2&quot;,&quot;API C: Message 1&quot;,&quot;API C: Message 2&quot;,&quot;API B: Message 1&quot;,&quot;API B: Message 2&quot;]
+<pre><code>[&quot;API D: Message 1&quot;,&quot;API D: Message 2&quot;,&quot;API B: Message 1&quot;,&quot;API B: Message 2&quot;]
 </code></pre>
 
 <p>Here is the https port and the result is the same.</p>
@@ -949,7 +980,7 @@ mvn clean install exec:exec
 
 <h4 id="api-a">API A</h4>
 
-<p>API A will call API B, C, D to fulfill its request. Now let&rsquo;s update the
+<p>API A will call API B and API C to fulfill its request. Now let&rsquo;s update the
 generated DataGetHandler.java code to</p>
 
 <pre><code>package com.networknt.apia.handler;
@@ -975,9 +1006,8 @@ import java.util.concurrent.CountDownLatch;
 
 public class DataGetHandler implements HttpHandler {
     static String CONFIG_NAME = &quot;api_a&quot;;
-    static String apibUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_b_endpoint&quot;);
+    static String apibUrl = (String)Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_b_endpoint&quot;);
     static String apicUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_c_endpoint&quot;);
-    static String apidUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_d_endpoint&quot;);
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
@@ -985,13 +1015,12 @@ public class DataGetHandler implements HttpHandler {
         final HttpGet[] requests = new HttpGet[] {
                 new HttpGet(apibUrl),
                 new HttpGet(apicUrl),
-                new HttpGet(apidUrl),
         };
         try {
             CloseableHttpAsyncClient client = Client.getInstance().getAsyncClient();
             final CountDownLatch latch = new CountDownLatch(requests.length);
             for (final HttpGet request: requests) {
-                Client.getInstance().propagateHeaders(request, exchange);
+                //Client.getInstance().propagateHeaders(request, exchange);
                 client.execute(request, new FutureCallback&lt;HttpResponse&gt;() {
                     @Override
                     public void completed(final HttpResponse response) {
@@ -1031,20 +1060,18 @@ public class DataGetHandler implements HttpHandler {
 }
 </code></pre>
 
-<p>API A needs to have the urls of API B, C and D in order to call them. Let&rsquo;s put it in a config file for
-now and move to service discovery later.</p>
+<p>API A needs to have the urls of API B, and API C in order to call them. Let&rsquo;s put it in a config
+file for now and move to service discovery later.</p>
 
 <p>Create api_a.yml in src/main/resources/config folder.</p>
 
 <pre><code>api_b_endpoint: http://localhost:7002/v1/data
 api_c_endpoint: http://localhost:7003/v1/data
-api_d_endpoint: http://localhost:7004/v1/data
-
 </code></pre>
 
 <p>Start API A server and test the endpoint /v1/data</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_aggregate/api_a/httpaggregate
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_branch/api_a/httpbranch
 mvn clean install exec:exec
 </code></pre>
 
@@ -1120,34 +1147,18 @@ the httpaggregate folder we just created and updated.</p>
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/tutorial/ms-branch/" title="Branch Pattern Microservices">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Branch Pattern Microservices
-            </div>
-          </div>
-        </div>
-      </a>
-  
   </div>
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/tool/" title="Tools">
+      <a href="https://networknt.github.io/light-rest-4j/tutorial/ms_aggregate/" title="Aggregate Pattern Microservices">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Tools
+              Aggregate Pattern Microservices
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

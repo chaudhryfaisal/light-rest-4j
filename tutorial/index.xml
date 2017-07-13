@@ -7,10 +7,22 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
-    <lastBuildDate>Fri, 16 Jun 2017 22:45:02 -0400</lastBuildDate>
+    <lastBuildDate>Wed, 12 Jul 2017 16:37:05 -0400</lastBuildDate>
     
 	<atom:link href="https://networknt.github.io/light-rest-4j/tutorial/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Branch Pattern Microservices</title>
+      <link>https://networknt.github.io/light-rest-4j/tutorial/ms-branch/</link>
+      <pubDate>Wed, 12 Jul 2017 16:37:05 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/tutorial/ms-branch/</guid>
+      <description>This is another pattern that is very useful which is a hybrid of chain pattern and aggregate pattern.
+This tutorial shows you how to build 4 services in branch pattern.
+ API A -&amp;gt; API B -&amp;gt; API D -&amp;gt; API C  API A calls API B and API C. API B calls API D.
+Prepare workspace All specifications and code of the services are on github.com but we are going to redo it again by following the steps in the tutorial.</description>
+    </item>
     
     <item>
       <title>Aggregate Pattern Microservices</title>
@@ -31,6 +43,7 @@ This tutorial shows you how to build 4 services with one of them the aggregator.
       <description>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.
  How to implement Chain Pattern of microservices
  How to implement Aggregate Pattern of microservices
+ How to implement Branch Pattern of Microservices
  How to access database in microservices
  How to register and discover services
   </description>
