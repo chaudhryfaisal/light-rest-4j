@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Examples on Light Rest 4J</title>
+    <link>https://networknt.github.io/light-rest-4j/example/</link>
+    <description>Recent content in Examples on Light Rest 4J</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Thu, 10 Aug 2017 09:42:59 -0400</lastBuildDate>
+    
+	<atom:link href="https://networknt.github.io/light-rest-4j/example/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Examples</title>
+      <link>https://networknt.github.io/light-rest-4j/example/</link>
+      <pubDate>Thu, 10 Aug 2017 09:42:59 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/example/</guid>
+      <description>As light-rest-4j is the first framework supported, we have more Restful examples than any other style of microserivces. All rest examples can be found at https://github.com/networknt/light-example-4j/tree/master/rest
+Most example applications consist multiple services and only petstore is a single service which is described in [getting started]()</description>
+    </item>
+    
+  </channel>
+</rss>

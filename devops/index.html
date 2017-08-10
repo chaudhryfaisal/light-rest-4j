@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Swagger Meta - Light Rest 4J</title>
+    <title>index - Light Rest 4J</title>
     <meta name="generator" content="Hugo 0.21-DEV" />
 
     
     <meta name="description" content="Light Rest 4J Docs">
     
-    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/">
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/devops/">
     
     <meta name="author" content="Steve Hu">
     
 
-    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/middleware/swagger-meta/">
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/devops/">
     <meta property="og:title" content="Light Rest 4J">
     <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Swagger Meta
+        index
       </div>
     </div>
 
@@ -270,11 +270,14 @@
 
 
 
-<a  title="DevOps" href="https://networknt.github.io/light-rest-4j/devops/">
+<a class="current" title="DevOps" href="https://networknt.github.io/light-rest-4j/devops/">
 	
 	DevOps
 </a>
 
+
+<ul id="scrollspy">
+</ul>
 
 
   
@@ -461,50 +464,9 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Swagger Meta </h1>
+			<h1>index </h1>
 
 			
-
-<h1 id="introduction">Introduction</h1>
-
-<p>This handler is part of the <a href="https://github.com/networknt/light-rest-4j">light-rest-4j</a>
-which is built on top of light-4j but focused on RESTful API only.</p>
-
-<p>It is designed based on swagger specification so it is our best interest to utilize
-the swagger.json to its full potential. Currently there are two components are using
-the swagger specification during runtime.</p>
-
-<ol>
-<li><a href="https://networknt.github.io/light-4j/middleware/swagger-security/">swagger-security</a> -
-Verify scope in the JWT token against scope defined in swagger specification if
-scope verification is true.</li>
-<li><a href="https://networknt.github.io/light-4j/middleware/swagger-validator/">swagger-validator</a> -
-Validate request and response based on the definition in swagger specification for
-the uri and method.</li>
-</ol>
-
-<p>As you have noticed, both components need to have swagger operation available
-based on the current request uri and method combination.</p>
-
-<h1 id="cache">Cache</h1>
-
-<p>A specification file swagger.json should be in the config folder of your API
-implementation and it will be loaded to memory with SwaggerHelper during server
-start up. It will be cached in memory until the server is restarted.</p>
-
-<h1 id="normalized-path">Normalized Path</h1>
-
-<p>In order to match the incoming request path to the paths defined in the swagger
-specification, all paths are normalized before matching action. SwaggerHelper
-provides an API to match the request path to the paths in swagger specification.</p>
-
-<h1 id="swaggerhandler">SwaggerHandler</h1>
-
-<p>This is an HttpHandler to parse the swagger spec based on the request uri and
-method and attach an SwaggerOperation object to the exchange. The swagger-security
-and swagger-validator modules are using it to do their jobs without parsing the
-swagger.json second time.</p>
-
 
 			<aside class="copyright" role="note">
 				
@@ -522,7 +484,7 @@ swagger.json second time.</p>
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/swagger-validator/" title="Swagger Validator">
+      <a href="https://networknt.github.io/light-rest-4j/benchmark/" title="index">
         <span class="direction">
           Previous
         </span>
@@ -532,7 +494,7 @@ swagger.json second time.</p>
           </div>
           <div class="stretch">
             <div class="title">
-              Swagger Validator
+              index
             </div>
           </div>
         </div>
@@ -542,14 +504,14 @@ swagger.json second time.</p>
 
   <div class="next">
   
-      <a href="https://networknt.github.io/light-rest-4j/middleware/swagger-security/" title="Swagger Security">
+      <a href="https://networknt.github.io/light-rest-4j/design/" title="index">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Swagger Security
+              index
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

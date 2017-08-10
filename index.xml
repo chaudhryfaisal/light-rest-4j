@@ -7,10 +7,76 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
-    <lastBuildDate>Wed, 12 Jul 2017 16:37:05 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 10 Aug 2017 09:43:18 -0400</lastBuildDate>
     
 	<atom:link href="https://networknt.github.io/light-rest-4j/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>index</title>
+      <link>https://networknt.github.io/light-rest-4j/roadmap/</link>
+      <pubDate>Thu, 10 Aug 2017 09:43:18 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/roadmap/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Examples</title>
+      <link>https://networknt.github.io/light-rest-4j/example/</link>
+      <pubDate>Thu, 10 Aug 2017 09:42:59 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/example/</guid>
+      <description>As light-rest-4j is the first framework supported, we have more Restful examples than any other style of microserivces. All rest examples can be found at https://github.com/networknt/light-example-4j/tree/master/rest
+Most example applications consist multiple services and only petstore is a single service which is described in [getting started]()</description>
+    </item>
+    
+    <item>
+      <title>index</title>
+      <link>https://networknt.github.io/light-rest-4j/benchmark/</link>
+      <pubDate>Thu, 10 Aug 2017 09:42:38 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/benchmark/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>index</title>
+      <link>https://networknt.github.io/light-rest-4j/devops/</link>
+      <pubDate>Thu, 10 Aug 2017 09:42:20 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/devops/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>index</title>
+      <link>https://networknt.github.io/light-rest-4j/design/</link>
+      <pubDate>Thu, 10 Aug 2017 09:41:55 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/design/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>index</title>
+      <link>https://networknt.github.io/light-rest-4j/architecture/</link>
+      <pubDate>Thu, 10 Aug 2017 09:41:43 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/architecture/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Getting Started</title>
+      <link>https://networknt.github.io/light-rest-4j/getting-started/</link>
+      <pubDate>Thu, 10 Aug 2017 09:41:21 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/getting-started/</guid>
+      <description>To start a microservice with light-rest-4j, the easier way is to use light-codegen to scaffold a running application based on your OpenAPI specification and a config.json that controls how code generator works.
+The other way to start your project if you don&amp;rsquo;t want to follow design driven approach is to copy one of our examples and extend it based on your use cases.
+Start project with light-codegen light-*-4j frameworks encourage design driven approach to build your services which means you have to create your contract before start coding.</description>
+    </item>
     
     <item>
       <title>Branch Pattern Microservices</title>

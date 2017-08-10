@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Getting-starteds on Light Rest 4J</title>
+    <link>https://networknt.github.io/light-rest-4j/getting-started/</link>
+    <description>Recent content in Getting-starteds on Light Rest 4J</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>Released under the MIT license</copyright>
+    <lastBuildDate>Thu, 10 Aug 2017 09:41:21 -0400</lastBuildDate>
+    
+	<atom:link href="https://networknt.github.io/light-rest-4j/getting-started/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Getting Started</title>
+      <link>https://networknt.github.io/light-rest-4j/getting-started/</link>
+      <pubDate>Thu, 10 Aug 2017 09:41:21 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/getting-started/</guid>
+      <description>To start a microservice with light-rest-4j, the easier way is to use light-codegen to scaffold a running application based on your OpenAPI specification and a config.json that controls how code generator works.
+The other way to start your project if you don&amp;rsquo;t want to follow design driven approach is to copy one of our examples and extend it based on your use cases.
+Start project with light-codegen light-*-4j frameworks encourage design driven approach to build your services which means you have to create your contract before start coding.</description>
+    </item>
+    
+  </channel>
+</rss>
