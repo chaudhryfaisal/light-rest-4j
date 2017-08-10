@@ -13,12 +13,14 @@
     
     
     <item>
-      <title>index</title>
+      <title>Benchmark</title>
       <link>https://networknt.github.io/light-rest-4j/benchmark/</link>
       <pubDate>Thu, 10 Aug 2017 09:42:38 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/benchmark/</guid>
-      <description></description>
+      <description>One of the major goals to design light-*-4j frameworks is to provide a Java EE alternative with lower latency, higher throughput and smaller memory footprint.
+We basically achieved this goal and beyond. Internally, we maintain a microservices benchmark with all the popular microservices frameworks.
+There are third party test from TechEmpower from Round 14 with a version that is not even optimized. Note that it is called light-java in that benchmark and later we have changed name to light-4j.</description>
     </item>
     
   </channel>

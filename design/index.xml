@@ -13,12 +13,12 @@
     
     
     <item>
-      <title>index</title>
+      <title>Design</title>
       <link>https://networknt.github.io/light-rest-4j/design/</link>
       <pubDate>Thu, 10 Aug 2017 09:41:55 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/design/</guid>
-      <description></description>
+      <description>This section will include any specific design consideration for Restful APIs and the general design can be found at https://networknt.github.io/light-4j/design/</description>
     </item>
     
   </channel>

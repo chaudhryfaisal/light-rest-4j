@@ -13,12 +13,12 @@
     
     
     <item>
-      <title>index</title>
+      <title>Architecture</title>
       <link>https://networknt.github.io/light-rest-4j/architecture/</link>
       <pubDate>Thu, 10 Aug 2017 09:41:43 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/architecture/</guid>
-      <description></description>
+      <description>This section will include any specific architecture consideration for Restful APIs and the general architecture for light-*-4j frameworks can be found at https://networknt.github.io/light-4j/architecture/</description>
     </item>
     
   </channel>

@@ -13,12 +13,12 @@
     
     
     <item>
-      <title>index</title>
+      <title>Road Map</title>
       <link>https://networknt.github.io/light-rest-4j/roadmap/</link>
       <pubDate>Thu, 10 Aug 2017 09:43:18 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/roadmap/</guid>
-      <description></description>
+      <description> We are closely monitoring OpenAPI 3.0 development and will support it once the tool chain is stable.  </description>
     </item>
     
   </channel>

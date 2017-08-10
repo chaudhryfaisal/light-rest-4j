@@ -13,12 +13,12 @@
     
     
     <item>
-      <title>index</title>
+      <title>Road Map</title>
       <link>https://networknt.github.io/light-rest-4j/roadmap/</link>
       <pubDate>Thu, 10 Aug 2017 09:43:18 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/roadmap/</guid>
-      <description></description>
+      <description> We are closely monitoring OpenAPI 3.0 development and will support it once the tool chain is stable.  </description>
     </item>
     
     <item>
@@ -28,43 +28,46 @@
       
       <guid>https://networknt.github.io/light-rest-4j/example/</guid>
       <description>As light-rest-4j is the first framework supported, we have more Restful examples than any other style of microserivces. All rest examples can be found at https://github.com/networknt/light-example-4j/tree/master/rest
-Most example applications consist multiple services and only petstore is a single service which is described in [getting started]()</description>
+Most example applications consist multiple services and only petstore is a single service which is described in getting started
+The rest of examples are used in tutorial and you can follow them step by step into the details.</description>
     </item>
     
     <item>
-      <title>index</title>
+      <title>Benchmark</title>
       <link>https://networknt.github.io/light-rest-4j/benchmark/</link>
       <pubDate>Thu, 10 Aug 2017 09:42:38 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/benchmark/</guid>
-      <description></description>
+      <description>One of the major goals to design light-*-4j frameworks is to provide a Java EE alternative with lower latency, higher throughput and smaller memory footprint.
+We basically achieved this goal and beyond. Internally, we maintain a microservices benchmark with all the popular microservices frameworks.
+There are third party test from TechEmpower from Round 14 with a version that is not even optimized. Note that it is called light-java in that benchmark and later we have changed name to light-4j.</description>
     </item>
     
     <item>
-      <title>index</title>
+      <title>DevOps</title>
       <link>https://networknt.github.io/light-rest-4j/devops/</link>
       <pubDate>Thu, 10 Aug 2017 09:42:20 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/devops/</guid>
-      <description></description>
+      <description>This document will include specific DevOps flows for light-rest-4j and everything in common can be found at light-4j DevOps section</description>
     </item>
     
     <item>
-      <title>index</title>
+      <title>Design</title>
       <link>https://networknt.github.io/light-rest-4j/design/</link>
       <pubDate>Thu, 10 Aug 2017 09:41:55 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/design/</guid>
-      <description></description>
+      <description>This section will include any specific design consideration for Restful APIs and the general design can be found at https://networknt.github.io/light-4j/design/</description>
     </item>
     
     <item>
-      <title>index</title>
+      <title>Architecture</title>
       <link>https://networknt.github.io/light-rest-4j/architecture/</link>
       <pubDate>Thu, 10 Aug 2017 09:41:43 -0400</pubDate>
       
       <guid>https://networknt.github.io/light-rest-4j/architecture/</guid>
-      <description></description>
+      <description>This section will include any specific architecture consideration for Restful APIs and the general architecture for light-*-4j frameworks can be found at https://networknt.github.io/light-4j/architecture/</description>
     </item>
     
     <item>
