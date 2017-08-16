@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>How to build petstore API from specification - Light Rest 4J</title>
+    <meta name="generator" content="Hugo 0.20.6" />
+
+    
+    <meta name="description" content="Light Rest 4J Docs">
+    
+    <link rel="canonical" href="https://networknt.github.io/light-rest-4j/tutorial/petstore/">
+    
+    <meta name="author" content="Steve Hu">
+    
+
+    <meta property="og:url" content="https://networknt.github.io/light-rest-4j/tutorial/petstore/">
+    <meta property="og:title" content="Light Rest 4J">
+    <meta property="og:image" content="https://networknt.github.io/light-rest-4j/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Light Rest 4J">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://networknt.github.io/light-rest-4j/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://networknt.github.io/light-rest-4j/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://networknt.github.io/light-rest-4j/fonts/icon.eot');
+        src: url('https://networknt.github.io/light-rest-4j/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://networknt.github.io/light-rest-4j/fonts/icon.woff')
+               format('woff'),
+             url('https://networknt.github.io/light-rest-4j/fonts/icon.ttf')
+               format('truetype'),
+             url('https://networknt.github.io/light-rest-4j/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://networknt.github.io/light-rest-4j/stylesheets/application.css">
+    <link rel="stylesheet" href="https://networknt.github.io/light-rest-4j/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://networknt.github.io/light-rest-4j/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://networknt.github.io/light-rest-4j/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://networknt.github.io/light-rest-4j/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        How to build petstore API from specification
+      </div>
+    </div>
+
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/stevehu" title="@stevehu on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/networknt/light-rest-4j" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="https://networknt.github.io/light-rest-4j/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>Light Rest 4J <span class="version">1.3.5</span></strong>
+        
+          <br>
+          networknt/light-rest-4j
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/networknt/light-rest-4j/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/networknt/light-rest-4j/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://networknt.github.io/light-rest-4j/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Architecture" href="https://networknt.github.io/light-rest-4j/architecture/">
+	
+	Architecture
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Design" href="https://networknt.github.io/light-rest-4j/design/">
+	
+	Design
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Middleware" href="https://networknt.github.io/light-rest-4j/middleware/">
+	
+	Middleware
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Other Component" href="https://networknt.github.io/light-rest-4j/other/">
+	
+	Other Component
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="DevOps" href="https://networknt.github.io/light-rest-4j/devops/">
+	
+	DevOps
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Benchmark" href="https://networknt.github.io/light-rest-4j/benchmark/">
+	
+	Benchmark
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://networknt.github.io/light-rest-4j/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Example" href="https://networknt.github.io/light-rest-4j/example/">
+	
+	Example
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tool" href="https://networknt.github.io/light-rest-4j/tool/">
+	
+	Tool
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Issues &amp; Help" href="https://github.com/networknt/light-rest-4j/issues">
+	
+	Issues &amp; Help
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Roadmap" href="https://networknt.github.io/light-rest-4j/roadmap/">
+	
+	Roadmap
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://www.apache.org/licenses/LICENSE-2.0">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Introduction" href="https://networknt.github.io/light-rest-4j/index.html">
+	
+	Introduction
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+        
+
+        
+        <hr>
+        <span class="section">The author</span>
+        
+        <ul>
+          
+
+          
+          <li>
+            <a href="https://github.com/stevehu" target="_blank" title="@stevehu on GitHub">
+              @stevehu on GitHub
+            </a>
+          </li>
+          
+
+          
+          <li>
+            <a href="mailto:stevehu@gmail.com" title="Email of stevehu@gmail.com">
+              Contact via email
+            </a>
+          </li>
+          
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>How to build petstore API from specification </h1>
+
+			
+
+<p>The petstore RESTful API is used by a lot of frameworks as reference application
+and in this tutorial, we will walk you through the step to get petstore generated
+and then deployed to production. Within these steps, we will show you how to use
+the features of light-4j and light-rest-4j frameworks.</p>
+
+<p>Please note that our frameworks are aiming microservices and there are several
+tutorial to show case multiple services interact with each other. These can be
+found at <a href="https://networknt.github.io/light-rest-4j/tutorial/">https://networknt.github.io/light-rest-4j/tutorial/</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p><a href="https://github.com/networknt/light-example-4j/tree/master/rest/petstore">Petstore</a>
+is a generated RESTful API project based on OpenAPI specification found <a href="https://github.com/networknt/model-config/tree/master/rest/petstore/2.0.0">here</a>.
+After the project is generated, we will try to change the configuration to enable
+other features in following steps.</p>
+
+<h2 id="prepare-environment">Prepare Environment</h2>
+
+<p>You need to have Java JDK 8 (I prefer OpenJDK but Oracle JDK will do), Maven, Git and
+Docker installed before starting this tutorial.</p>
+
+<p>Assuming above software packages are installed, let&rsquo;s create a workspace and clone the
+projects we need for the tutorial. The following will assume to your workspace is named
+networknt under your home directory.</p>
+
+<pre><code>cd ~
+mkdir networknt
+cd networknt
+git clone git@github.com:networknt/light-codegen.git
+git clone git@github.com:networknt/light-example-4j.git
+git clone git@github.com:networknt/light-oauth2.git
+git clone git@github.com:networknt/light-docker.git
+git clone git@github.com:networknt/model-config.git
+</code></pre>
+
+<p>We are going to re-generate petstore project in light-example-4j. So let&rsquo;s rename
+the existing directory in light-example-4j to petstore.bak</p>
+
+<pre><code>cd ~/networknt/light-example-4j/rest
+mv petstore petstore.bak
+cd ~/networknt
+</code></pre>
+
+<p>Now let&rsquo;s build the light-codegen to make it ready to generate petstore project. There are
+ways to use light-codegen but here we just build and use the command line codgen-cli.</p>
+
+<pre><code>cd ~/networknt/light-codegen
+mvn install -DskipTests
+</code></pre>
+
+<h2 id="generate-project">Generate project</h2>
+
+<p>This project will be updated constantly when a new version of light-4j framework
+is released or any updates in <a href="https://github.com/networknt/light-codegen">light-codegen</a>.</p>
+
+<p>Here is the command line to generate this project from model-config directory. It
+assumes that you have light-example-4j cloned in the same working directory and
+petstore directory is removed or renamed. If you have changed the specification
+and want to regenerate the project, it is better to generate into another folder
+and then do a full text comparison to merge the old project and new project.</p>
+
+<pre><code>cd ~/networknt/light-codegen
+java -jar codegen-cli/target/codegen-cli.jar -f light-rest-4j -o ~/networknt/light-example-4j/rest/petstore -m ~/networknt/model-config/rest/petstore/2.0.0/swagger.json -c ~/networknt/model-config/rest/petstore/2.0.0/config.json
+</code></pre>
+
+<h2 id="build-and-start">Build and Start</h2>
+
+<p>To build the generated server.</p>
+
+<pre><code>cd ~/networknt/light-example-4j/rest/petstore
+mvn install exec:exec
+</code></pre>
+
+<p>Now the server will be started and listens to port 8080.</p>
+
+<h2 id="test">Test</h2>
+
+<p>The best tool to test RESTful API is <a href="https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en">Postman</a>
+It is very easy to set headers and other parameters and save the configuration for
+future usage.</p>
+
+<p>Some people like curl command line and it works as well. Here is one example to access
+one of the endpoint petstore serves.</p>
+
+<pre><code>curl localhost:8080/v2/pet/111
+</code></pre>
+
+<p>And the result looks like this. This is the generated example response based on swagger
+specification.</p>
+
+<pre><code>{
+                &quot;photoUrls&quot; : [ &quot;aeiou&quot; ],
+                &quot;name&quot; : &quot;doggie&quot;,
+                &quot;id&quot; : 123456789,
+                &quot;category&quot; : {
+                  &quot;name&quot; : &quot;aeiou&quot;,
+                  &quot;id&quot; : 123456789
+                },
+                &quot;tags&quot; : [
+                  {
+                    &quot;name&quot; : &quot;aeiou&quot;,
+                    &quot;id&quot; : 123456789
+                  }
+                ],
+                &quot;status&quot; : &quot;aeiou&quot;
+              }
+</code></pre>
+
+<p>Now, let&rsquo;s test the server with an url that is not defined in the specification.</p>
+
+<pre><code>curl localhost:8080/abc
+</code></pre>
+
+<p>And the result is:</p>
+
+<pre><code>{&quot;statusCode&quot;:404,&quot;code&quot;:&quot;ERR10007&quot;,&quot;message&quot;:&quot;INVALID_REQUEST_PATH&quot;,&quot;description&quot;:&quot;Request path cannot be found in the spec.&quot;}
+</code></pre>
+
+<p>In fact, the specification is loaded into the framework at runtime and there is a
+module called Validator that does the validation against specification for headers,
+query parameters, uri parameters and body. It also supports validation using JSON
+schema with a independent library <a href="https://github.com/networknt/json-schema-validator">json-schema-validator</a></p>
+
+<h2 id="enable-secrity">Enable secrity</h2>
+
+<p>By default, the generated API has security turned off. You can turn on the JWT
+verification by updating src/main/resources/config/security.yml in petstore project.</p>
+
+<p>Here is the default security.yml</p>
+
+<pre><code># Security configuration in light framework.
+---
+# Enable JWT verification flag.
+enableVerifyJwt: false
+
+# Enable JWT scope verification. Only valid when enableVerifyJwt is true.
+enableVerifyScope: true
+
+# User for test only. should be always be false on official environment.
+enableMockJwt: false
+
+# JWT signature public certificates. kid and certificate path mappings.
+jwt:
+  certificate:
+    '100': oauth/primary.crt
+    '101': oauth/secondary.crt
+  clockSkewInSeconds: 60
+
+# Enable or disable JWT token logging
+logJwtToken: true
+
+# Enable or disable client_id, user_id and scope logging.
+logClientUserScope: false
+</code></pre>
+
+<p>And here is the updated security.yml</p>
+
+<pre><code># Security configuration in light framework.
+---
+# Enable JWT verification flag.
+enableVerifyJwt: true
+
+# Enable JWT scope verification. Only valid when enableVerifyJwt is true.
+enableVerifyScope: true
+
+# User for test only. should be always be false on official environment.
+enableMockJwt: false
+
+# JWT signature public certificates. kid and certificate path mappings.
+jwt:
+  certificate:
+    '100': oauth/primary.crt
+    '101': oauth/secondary.crt
+  clockSkewInSeconds: 60
+
+# Enable or disable JWT token logging
+logJwtToken: true
+
+# Enable or disable client_id, user_id and scope logging.
+logClientUserScope: false
+</code></pre>
+
+<p>The updated security.yml enabled JWT signature verification as well as scope
+verification.</p>
+
+<p>Let&rsquo;s shutdown the server by issuing a CTRL+C on the terminal. And restart the server
+after repackage it.</p>
+
+<pre><code>mvn package exec:exec
+</code></pre>
+
+<p>With the security enabled, the curl command won&rsquo;t work anymore.</p>
+
+<pre><code>curl localhost:8080/v2/pet/111
+</code></pre>
+
+<p>Result:</p>
+
+<pre><code>{&quot;statusCode&quot;:401,&quot;code&quot;:&quot;ERR10002&quot;,&quot;message&quot;:&quot;MISSING_AUTH_TOKEN&quot;,&quot;description&quot;:&quot;No Authorization header or the token is not bearer type&quot;}
+</code></pre>
+
+<p>In order to access it, you have to provide the right JWT token. There is a long lived
+token that can be found at <a href="https://github.com/networknt/light-oauth2">https://github.com/networknt/light-oauth2</a></p>
+
+<p>Let&rsquo;s use that token in curl.</p>
+
+<pre><code>curl -H &quot;Authorization: Bearer eyJraWQiOiIxMDAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJ1cm46Y29tOm5ldHdvcmtudDpvYXV0aDI6djEiLCJhdWQiOiJ1cm46Y29tLm5ldHdvcmtudCIsImV4cCI6MTc5NDg3MzA1MiwianRpIjoiSjFKdmR1bFFRMUF6cjhTNlJueHEwQSIsImlhdCI6MTQ3OTUxMzA1MiwibmJmIjoxNDc5NTEyOTMyLCJ2ZXJzaW9uIjoiMS4wIiwidXNlcl9pZCI6InN0ZXZlIiwidXNlcl90eXBlIjoiRU1QTE9ZRUUiLCJjbGllbnRfaWQiOiJmN2Q0MjM0OC1jNjQ3LTRlZmItYTUyZC00YzU3ODc0MjFlNzIiLCJzY29wZSI6WyJ3cml0ZTpwZXRzIiwicmVhZDpwZXRzIl19.gUcM-JxNBH7rtoRUlxmaK6P4xZdEOueEqIBNddAAx4SyWSy2sV7d7MjAog6k7bInXzV0PWOZZ-JdgTTSn6jTb4K3Je49BcGz1BRwzTslJIOwmvqyziF3lcg6aF5iWOTjmVEF0zXwMJtMc_IcF9FAA8iQi2s5l0DYgkMrjkQ3fBhWnopgfkzjbCuZU2mHDSQ6DJmomWpnE9hDxBp_lGjsQ73HWNNKN-XmBEzH-nz-K5-2wm_hiCq3d0BXm57VxuL7dxpnIwhOIMAYR04PvYHyz2S-Nu9dw6apenfyKe8-ydVt7KHnnWWmk1ErlFzCHmsDigJz0ku0QX59lM7xY5i4qA&quot; localhost:8080/v2/pet/111
+</code></pre>
+
+<p>And we have the result:</p>
+
+<pre><code>{
+                &quot;photoUrls&quot; : [ &quot;aeiou&quot; ],
+                &quot;name&quot; : &quot;doggie&quot;,
+                &quot;id&quot; : 123456789,
+                &quot;category&quot; : {
+                  &quot;name&quot; : &quot;aeiou&quot;,
+                  &quot;id&quot; : 123456789
+                },
+                &quot;tags&quot; : [
+                  {
+                    &quot;name&quot; : &quot;aeiou&quot;,
+                    &quot;id&quot; : 123456789
+                  }
+                ],
+                &quot;status&quot; : &quot;aeiou&quot;
+              }
+</code></pre>
+
+<h2 id="docker">Docker</h2>
+
+<p>When petstore is generated, a default Dockerfile is there ready for any customization.
+Let&rsquo;s just use it to create a docker image and start a docker container. Make sure you
+are in light-example-4j/rest/petstore folder.</p>
+
+<pre><code>cd ~/networknt/light-example-4j/rest/petstore
+docker build -t networknt/example-petstore .
+</code></pre>
+
+<p>Let&rsquo;s start the docker container.</p>
+
+<pre><code>docker run -d -p 8080:8080 networknt/example-petstore
+</code></pre>
+
+<p>In another terminal, run the curl to access the server.</p>
+
+<pre><code>curl -H &quot;Authorization: Bearer eyJraWQiOiIxMDAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJ1cm46Y29tOm5ldHdvcmtudDpvYXV0aDI6djEiLCJhdWQiOiJ1cm46Y29tLm5ldHdvcmtudCIsImV4cCI6MTc5NDg3MzA1MiwianRpIjoiSjFKdmR1bFFRMUF6cjhTNlJueHEwQSIsImlhdCI6MTQ3OTUxMzA1MiwibmJmIjoxNDc5NTEyOTMyLCJ2ZXJzaW9uIjoiMS4wIiwidXNlcl9pZCI6InN0ZXZlIiwidXNlcl90eXBlIjoiRU1QTE9ZRUUiLCJjbGllbnRfaWQiOiJmN2Q0MjM0OC1jNjQ3LTRlZmItYTUyZC00YzU3ODc0MjFlNzIiLCJzY29wZSI6WyJ3cml0ZTpwZXRzIiwicmVhZDpwZXRzIl19.gUcM-JxNBH7rtoRUlxmaK6P4xZdEOueEqIBNddAAx4SyWSy2sV7d7MjAog6k7bInXzV0PWOZZ-JdgTTSn6jTb4K3Je49BcGz1BRwzTslJIOwmvqyziF3lcg6aF5iWOTjmVEF0zXwMJtMc_IcF9FAA8iQi2s5l0DYgkMrjkQ3fBhWnopgfkzjbCuZU2mHDSQ6DJmomWpnE9hDxBp_lGjsQ73HWNNKN-XmBEzH-nz-K5-2wm_hiCq3d0BXm57VxuL7dxpnIwhOIMAYR04PvYHyz2S-Nu9dw6apenfyKe8-ydVt7KHnnWWmk1ErlFzCHmsDigJz0ku0QX59lM7xY5i4qA&quot; localhost:8080/v2/pet/111
+</code></pre>
+
+<p>And the result should be:</p>
+
+<pre><code>{
+                &quot;photoUrls&quot; : [ &quot;aeiou&quot; ],
+                &quot;name&quot; : &quot;doggie&quot;,
+                &quot;id&quot; : 123456789,
+                &quot;category&quot; : {
+                  &quot;name&quot; : &quot;aeiou&quot;,
+                  &quot;id&quot; : 123456789
+                },
+                &quot;tags&quot; : [
+                  {
+                    &quot;name&quot; : &quot;aeiou&quot;,
+                    &quot;id&quot; : 123456789
+                  }
+                ],
+                &quot;status&quot; : &quot;aeiou&quot;
+              }
+
+</code></pre>
+
+<p>Now let&rsquo;s shutdown the docker container. First use &ldquo;docker ps&rdquo; to find the container_id
+and then issue docker stop with that container_id.</p>
+
+<pre><code>docker ps
+docker stop ad86cc533270
+</code></pre>
+
+<p>The next step, let&rsquo;s push the docker image to docker hub. This assumes that you have
+an account on docker hub. For me, I am going to push it to networknt/example-petstore.</p>
+
+<p>Please skip this step if you don&rsquo;t have a docker hub account yet.</p>
+
+<pre><code>docker images
+docker tag 9f0b9fe29c44 networknt/example-petstore:latest
+docker push networknt/example-petstore
+</code></pre>
+
+<p>The example-petstore can be found at <a href="https://hub.docker.com/u/networknt/dashboard/">https://hub.docker.com/u/networknt/dashboard/</a></p>
+
+<p>And the following command can pull and run the docker image on your local if you have
+docker installed.</p>
+
+<pre><code>docker run -d -p 8080:8080 networknt/example-petstore
+</code></pre>
+
+<h2 id="metric">Metric</h2>
+
+<p>In order to use oauth2(light-oauth2), metrics(Influxdb and Grafana) and
+logging(Elasticsearch, Logstash and Kibana), we&rsquo;ve cloned the light-docker repo.</p>
+
+<p>Now let&rsquo;s start all services defined in docker-compose.yml</p>
+
+<pre><code>cd ~/networknt/light-docker
+docker-compose up --build
+</code></pre>
+
+<p>First let&rsquo;s make sure that Influxdb and Grafana can be accessed.</p>
+
+<pre><code>http://localhost:8083/
+</code></pre>
+
+<p>Make sure Influxdb admin page is shown up and metrics database is created.</p>
+
+<pre><code>http://localhost:3000/
+</code></pre>
+
+<p>Make sure Grafana dashboard is up and you can login with admin/admin.</p>
+
+<p>Once both Influxdb and Grafana are up and running, let&rsquo;s stop the example-petstore
+container by issuing &ldquo;docker ps&rdquo; on another terminal to find out the container_id of
+example-petstore. Note: there are several docker containers running so double check
+you have picked the right container_id.</p>
+
+<p>Now run the following command to stop the example-petstore</p>
+
+<pre><code>docker stop [container_id of example-petstore]
+</code></pre>
+
+<p>In the next step, we are going to start the same container with externalized metrics
+config so that the server can connect to the Influxdb container to report the metrics.</p>
+
+<p>Let&rsquo;s create a folder under /tmp and name it petstore. Within /tmp/petstore, create
+another folder called config. Now create metrics.yml in /tmp/petstore/config folder.</p>
+
+<pre><code>description: Metrics handler configuration
+enabled: true
+influxdbProtocol: http
+influxdbHost: influxdb
+influxdbPort: 8086
+influxdbName: metrics
+influxdbUser: root
+influxdbPass: root
+reportInMinutes: 1
+</code></pre>
+
+<p>Please note that the above configuration is only for testing.</p>
+
+<p>Now start the container and linked to Influxdb.</p>
+
+<pre><code>docker run -d -p 8080:8080 -v /tmp/petstore/config:/config --network=lightdocker_light networknt/example-petstore
+</code></pre>
+
+<p>Access the one endpoint several times with curl command and wait for one minute.</p>
+
+<pre><code>curl -H &quot;Authorization: Bearer eyJraWQiOiIxMDAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJ1cm46Y29tOm5ldHdvcmtudDpvYXV0aDI6djEiLCJhdWQiOiJ1cm46Y29tLm5ldHdvcmtudCIsImV4cCI6MTc5NDg3MzA1MiwianRpIjoiSjFKdmR1bFFRMUF6cjhTNlJueHEwQSIsImlhdCI6MTQ3OTUxMzA1MiwibmJmIjoxNDc5NTEyOTMyLCJ2ZXJzaW9uIjoiMS4wIiwidXNlcl9pZCI6InN0ZXZlIiwidXNlcl90eXBlIjoiRU1QTE9ZRUUiLCJjbGllbnRfaWQiOiJmN2Q0MjM0OC1jNjQ3LTRlZmItYTUyZC00YzU3ODc0MjFlNzIiLCJzY29wZSI6WyJ3cml0ZTpwZXRzIiwicmVhZDpwZXRzIl19.gUcM-JxNBH7rtoRUlxmaK6P4xZdEOueEqIBNddAAx4SyWSy2sV7d7MjAog6k7bInXzV0PWOZZ-JdgTTSn6jTb4K3Je49BcGz1BRwzTslJIOwmvqyziF3lcg6aF5iWOTjmVEF0zXwMJtMc_IcF9FAA8iQi2s5l0DYgkMrjkQ3fBhWnopgfkzjbCuZU2mHDSQ6DJmomWpnE9hDxBp_lGjsQ73HWNNKN-XmBEzH-nz-K5-2wm_hiCq3d0BXm57VxuL7dxpnIwhOIMAYR04PvYHyz2S-Nu9dw6apenfyKe8-ydVt7KHnnWWmk1ErlFzCHmsDigJz0ku0QX59lM7xY5i4qA&quot; localhost:8080/v2/pet/111
+</code></pre>
+
+<p>Go to <a href="http://localhost:8083/">http://localhost:8083/</a> and select metrics database and select &ldquo;SHOW MEASUREMENTS&rdquo;.
+You will find several measurements created. Some of them are for api view and some of them
+are for client view.</p>
+
+<p>You can connect Grafana to Influxdb and create dashboards on Grafana to visualize
+the metrics.</p>
+
+<h2 id="logging">Logging</h2>
+
+<p>Logging is very important in microservices architecture as logs must be aggregated in
+order to trace all the activities of a particular request from a consumer. We are using
+ELK stack for logging. In the above step, Elasticsearch, Logstash and Kibana are all
+started in the same docker-compose.yml.</p>
+
+<p>In order for the example-petstore container to forward log files to ELK, we need to
+set up log driver on the application container to forward logs to Logstash.</p>
+
+<p>Here is the command line to start the example-petstore</p>
+
+<pre><code>export LOGSTASH_ADDRESS=$(docker inspect --format '{{ .NetworkSettings.Networks.lightdocker_light.IPAddress }}' lightdocker_logstash_1)
+docker run -d -p 8080:8080 -v /tmp/petstore/config:/config --network=lightdocker_light --log-driver=gelf --log-opt gelf-address=udp://$LOGSTASH_ADDRESS:12201 --log-opt tag=&quot;petstore&quot; --log-opt env=dev networknt/example-petstore
+
+</code></pre>
+
+<p>Now you example-petstore is up and running and all logs have sent to the Logstash and
+then ElasticSearch. Let&rsquo;s go to the Kibana to see if our logs can be viewed there.</p>
+
+<pre><code>http://localhost:5601/
+</code></pre>
+
+<p>Just select the default template and you can see the logs there.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>This conclude the petstore example on the dev environment; however, the steps are not for
+production as there are a lot of security issues need to be addressed and containers
+won&rsquo;t be managed by docker-compose on production. Kubernetes or Docker Swarm will be
+utilized likely. This is out of the scope for this tutorial for now.</p>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2017 Released under the MIT license &ndash;
+				
+				Documentation built with
+				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
+				using the
+				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+  </div>
+
+  <div class="next">
+  
+      <a href="https://networknt.github.io/light-rest-4j/roadmap/" title="Road Map">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Road Map
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+</nav>
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/networknt.github.io\/light-rest-4j\/';
+      var repo_id  = 'networknt\/light-rest-4j';
+    
+    </script>
+
+    <script src="https://networknt.github.io/light-rest-4j/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+

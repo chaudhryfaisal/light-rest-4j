@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
-    <lastBuildDate>Thu, 10 Aug 2017 09:43:18 -0400</lastBuildDate>
+    <lastBuildDate>Tue, 15 Aug 2017 21:56:32 -0400</lastBuildDate>
     
 	<atom:link href="https://networknt.github.io/light-rest-4j/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>How to build petstore API from specification</title>
+      <link>https://networknt.github.io/light-rest-4j/tutorial/petstore/</link>
+      <pubDate>Tue, 15 Aug 2017 21:56:32 -0400</pubDate>
+      
+      <guid>https://networknt.github.io/light-rest-4j/tutorial/petstore/</guid>
+      <description>The petstore RESTful API is used by a lot of frameworks as reference application and in this tutorial, we will walk you through the step to get petstore generated and then deployed to production. Within these steps, we will show you how to use the features of light-4j and light-rest-4j frameworks.
+Please note that our frameworks are aiming microservices and there are several tutorial to show case multiple services interact with each other.</description>
+    </item>
     
     <item>
       <title>Road Map</title>
@@ -143,6 +153,7 @@ Currently, there is no other components but something might be added later on.</
       
       <guid>https://networknt.github.io/light-rest-4j/tutorial/</guid>
       <description>The following tutorials are leveraging light-rest-4j framework and they will help users to get started.
+ How to build petstore API from specification
  How to implement Chain Pattern of microservices
  How to implement Aggregate Pattern of microservices
  How to implement Branch Pattern of Microservices
