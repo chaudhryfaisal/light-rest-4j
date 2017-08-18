@@ -39,7 +39,7 @@ Please note that our frameworks are aiming microservices and there are several t
       <guid>https://networknt.github.io/light-rest-4j/example/</guid>
       <description>As light-rest-4j is the first framework supported, we have more Restful examples than any other style of microserivces. All rest examples can be found at https://github.com/networknt/light-example-4j/tree/master/rest
 Most example applications consist multiple services and only petstore is a single service which is described in getting started
-The rest of examples are used in tutorial and you can follow them step by step into the details.</description>
+The rest of examples are used in tutorials and you can follow them step by step into the details.</description>
     </item>
     
     <item>
