@@ -608,7 +608,7 @@ to start four projects in light-example-4j/rest/ms_chain. In normal API build, y
 should create a repo for each API. For us, we have to user light-example-4j for all the
 examples and tutorial for easy management in networknt github organization.</p>
 
-<h4 id="build-light-codege">Build light-codege</h4>
+<h4 id="build-light-codegen">Build light-codegen</h4>
 
 <p>The project is cloned to the local already during the prepare stage. Let&rsquo;s build it.</p>
 
@@ -816,17 +816,14 @@ public class DataGetHandler implements HttpHandler {
 import com.networknt.config.Config;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DataGetHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        List&lt;String&gt; messages = new ArrayList&lt;String&gt;();
+        List&lt;String&gt; messages = new ArrayList&lt;&gt;();
         messages.add(&quot;API D: Message 1&quot;);
         messages.add(&quot;API D: Message 2&quot;);
         exchange.getResponseSender().send(Config.getInstance().getMapper().writeValueAsString(messages));
@@ -863,48 +860,79 @@ certificate and we don&rsquo;t want to verify the domain.</p>
 <p>Let&rsquo;s leave API D running and update API C DataGetHandler in
 ~/networknt/light-example-4j/rest/ms_chain/api_c/httpchain</p>
 
-<pre><code>
-package com.networknt.apic.handler;
+<pre><code>package com.networknt.apic.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.networknt.client.Client;
+import com.networknt.client.Http2Client;
 import com.networknt.config.Config;
 import com.networknt.exception.ClientException;
+import com.networknt.security.JwtHelper;
+import io.undertow.UndertowOptions;
+import io.undertow.client.ClientConnection;
+import io.undertow.client.ClientRequest;
+import io.undertow.client.ClientResponse;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import io.undertow.util.Methods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xnio.OptionMap;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DataGetHandler implements HttpHandler {
     static String CONFIG_NAME = &quot;api_c&quot;;
-    static String apidUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_d_endpoint&quot;);
+    static Logger logger = LoggerFactory.getLogger(DataGetHandler.class);
+    static String apidHost = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_d_host&quot;);
+    static String apidPath = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_d_path&quot;);
+    static Map&lt;String, Object&gt; securityConfig = (Map)Config.getInstance().getJsonMapConfig(JwtHelper.SECURITY_CONFIG);
+    static boolean securityEnabled = (Boolean)securityConfig.get(JwtHelper.ENABLE_VERIFY_JWT);
+    static Http2Client client = Http2Client.getInstance();
+    static ClientConnection connection;
+
+    public DataGetHandler() {
+        try {
+            connection = client.connect(new URI(apidHost), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, OptionMap.create(UndertowOptions.ENABLE_HTTP2, true)).get();
+        } catch (Exception e) {
+            logger.error(&quot;Exeption:&quot;, e);
+        }
+    }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
-        try {
-            CloseableHttpClient client = Client.getInstance().getSyncClient();
-            HttpGet httpGet = new HttpGet(apidUrl);
-            CloseableHttpResponse response = client.execute(httpGet);
-            int responseCode = response.getStatusLine().getStatusCode();
-            if(responseCode != 200){
-                throw new Exception(&quot;Failed to call API D: &quot; + responseCode);
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        final CountDownLatch latch = new CountDownLatch(1);
+        if(connection == null || !connection.isOpen()) {
+            try {
+                connection = client.connect(new URI(apidHost), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, OptionMap.create(UndertowOptions.ENABLE_HTTP2, true)).get();
+            } catch (Exception e) {
+                logger.error(&quot;Exeption:&quot;, e);
+                throw new ClientException(e);
             }
-            List&lt;String&gt; apidList = (List&lt;String&gt;) Config.getInstance().getMapper().readValue(response.getEntity().getContent(),
+        }
+        final AtomicReference&lt;ClientResponse&gt; reference = new AtomicReference&lt;&gt;();
+        try {
+            ClientRequest request = new ClientRequest().setMethod(Methods.GET).setPath(apidPath);
+            // this is to ask client module to pass through correlationId and traceabilityId as well as
+            // getting access token from oauth2 server automatically and attatch authorization headers.
+            if(securityEnabled) client.propagateHeaders(request, exchange);
+            connection.sendRequest(request, client.createClientCallback(reference, latch));
+            latch.await();
+            int statusCode = reference.get().getResponseCode();
+            if(statusCode &gt;= 300){
+                throw new Exception(&quot;Failed to call API D: &quot; + statusCode);
+            }
+            List&lt;String&gt; apidList = Config.getInstance().getMapper().readValue(reference.get().getAttachment(Http2Client.RESPONSE_BODY),
                     new TypeReference&lt;List&lt;String&gt;&gt;(){});
             list.addAll(apidList);
-        } catch (ClientException e) {
-            throw new Exception(&quot;Client Exception: &quot;, e);
-        } catch (IOException e) {
-            throw new Exception(&quot;IOException:&quot;, e);
+        } catch (Exception e) {
+            logger.error(&quot;Exception:&quot;, e);
+            throw new ClientException(e);
         }
         list.add(&quot;API C: Message 1&quot;);
         list.add(&quot;API C: Message 2&quot;);
@@ -918,9 +946,12 @@ now and move to service discovery later.</p>
 
 <p>Create api_c.yml in src/main/resources/config folder.</p>
 
-<pre><code>api_d_endpoint: &quot;http://localhost:7004/v1/data&quot;
-
+<pre><code>api_d_host: h2c-prior://localhost:7004
+api_d_path: /v1/data
 </code></pre>
+
+<p>Note as we are using HTTP 2.0 to connect to API D and we know API D is HTTP 2.0 enabled. The
+host protocol is h2c-prior instead of http to all Http2Client to use HTTP 2.0 to connect.</p>
 
 <p>Start API C server and test the endpoint /v1/data</p>
 
@@ -954,46 +985,77 @@ will call API C to fulfill its request.</p>
 <pre><code>package com.networknt.apib.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.networknt.client.Client;
+import com.networknt.client.Http2Client;
 import com.networknt.config.Config;
 import com.networknt.exception.ClientException;
+import com.networknt.security.JwtHelper;
+import io.undertow.UndertowOptions;
+import io.undertow.client.ClientConnection;
+import io.undertow.client.ClientRequest;
+import io.undertow.client.ClientResponse;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import io.undertow.util.Methods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xnio.OptionMap;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DataGetHandler implements HttpHandler {
     static String CONFIG_NAME = &quot;api_b&quot;;
-    static String apidUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_c_endpoint&quot;);
+    static Logger logger = LoggerFactory.getLogger(DataGetHandler.class);
+    static String apicHost = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_c_host&quot;);
+    static String apicPath = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_c_path&quot;);
+    static Map&lt;String, Object&gt; securityConfig = (Map)Config.getInstance().getJsonMapConfig(JwtHelper.SECURITY_CONFIG);
+    static boolean securityEnabled = (Boolean)securityConfig.get(JwtHelper.ENABLE_VERIFY_JWT);
+    static Http2Client client = Http2Client.getInstance();
+    static ClientConnection connection;
+
+    public DataGetHandler() {
+        try {
+            connection = client.connect(new URI(apicHost), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, OptionMap.create(UndertowOptions.ENABLE_HTTP2, true)).get();
+        } catch (Exception e) {
+            logger.error(&quot;Exeption:&quot;, e);
+        }
+    }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
-        try {
-            CloseableHttpClient client = Client.getInstance().getSyncClient();
-            HttpGet httpGet = new HttpGet(apidUrl);
-            CloseableHttpResponse response = client.execute(httpGet);
-            int responseCode = response.getStatusLine().getStatusCode();
-            if(responseCode != 200){
-                throw new Exception(&quot;Failed to call API C: &quot; + responseCode);
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        final CountDownLatch latch = new CountDownLatch(1);
+        if(connection == null || !connection.isOpen()) {
+            try {
+                connection = client.connect(new URI(apicHost), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, OptionMap.create(UndertowOptions.ENABLE_HTTP2, true)).get();
+            } catch (Exception e) {
+                logger.error(&quot;Exeption:&quot;, e);
+                throw new ClientException(e);
             }
-            List&lt;String&gt; apicList = (List&lt;String&gt;) Config.getInstance().getMapper().readValue(response.getEntity().getContent(),
-                    new TypeReference&lt;List&lt;String&gt;&gt;(){});
-            list.addAll(apicList);
-        } catch (ClientException e) {
-            throw new Exception(&quot;Client Exception: &quot;, e);
-        } catch (IOException e) {
-            throw new Exception(&quot;IOException:&quot;, e);
         }
-        // now add API B specific messages
+        final AtomicReference&lt;ClientResponse&gt; reference = new AtomicReference&lt;&gt;();
+        try {
+            ClientRequest request = new ClientRequest().setMethod(Methods.GET).setPath(apicPath);
+            // this is to ask client module to pass through correlationId and traceabilityId as well as
+            // getting access token from oauth2 server automatically and attatch authorization headers.
+            if(securityEnabled) client.propagateHeaders(request, exchange);
+            connection.sendRequest(request, client.createClientCallback(reference, latch));
+            latch.await();
+            int statusCode = reference.get().getResponseCode();
+            if(statusCode &gt;= 300){
+                throw new Exception(&quot;Failed to call API C: &quot; + statusCode);
+            }
+            List&lt;String&gt; apidList = Config.getInstance().getMapper().readValue(reference.get().getAttachment(Http2Client.RESPONSE_BODY),
+                    new TypeReference&lt;List&lt;String&gt;&gt;(){});
+            list.addAll(apidList);
+        } catch (Exception e) {
+            logger.error(&quot;Exception:&quot;, e);
+            throw new ClientException(e);
+        }
         list.add(&quot;API B: Message 1&quot;);
         list.add(&quot;API B: Message 2&quot;);
         exchange.getResponseSender().send(Config.getInstance().getMapper().writeValueAsString(list));
@@ -1006,8 +1068,8 @@ now and move to service discovery later.</p>
 
 <p>Create api_b.yml in src/main/resources/config folder.</p>
 
-<pre><code>api_c_endpoint: &quot;http://localhost:7003/v1/data&quot;
-
+<pre><code>api_c_host: h2c-prior://localhost:7003
+api_c_path: /v1/data
 </code></pre>
 
 <p>Start API B server and test the endpoint /v1/data</p>
@@ -1040,51 +1102,83 @@ generated DataGetHandler.java code to</p>
 <pre><code>package com.networknt.apia.handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.networknt.client.Client;
+import com.networknt.client.Http2Client;
 import com.networknt.config.Config;
 import com.networknt.exception.ClientException;
+import com.networknt.security.JwtHelper;
+import io.undertow.UndertowOptions;
+import io.undertow.client.ClientConnection;
+import io.undertow.client.ClientRequest;
+import io.undertow.client.ClientResponse;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import io.undertow.util.Methods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xnio.OptionMap;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DataGetHandler implements HttpHandler {
     static String CONFIG_NAME = &quot;api_a&quot;;
-    static String apidUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_b_endpoint&quot;);
+    static Logger logger = LoggerFactory.getLogger(DataGetHandler.class);
+    static String apibHost = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_b_host&quot;);
+    static String apibPath = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_b_path&quot;);
+    static Map&lt;String, Object&gt; securityConfig = (Map)Config.getInstance().getJsonMapConfig(JwtHelper.SECURITY_CONFIG);
+    static boolean securityEnabled = (Boolean)securityConfig.get(JwtHelper.ENABLE_VERIFY_JWT);
+    static Http2Client client = Http2Client.getInstance();
+    static ClientConnection connection;
+
+    public DataGetHandler() {
+        try {
+            connection = client.connect(new URI(apibHost), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, OptionMap.create(UndertowOptions.ENABLE_HTTP2, true)).get();
+        } catch (Exception e) {
+            logger.error(&quot;Exeption:&quot;, e);
+        }
+    }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
-        try {
-            CloseableHttpClient client = Client.getInstance().getSyncClient();
-            HttpGet httpGet = new HttpGet(apidUrl);
-            CloseableHttpResponse response = client.execute(httpGet);
-            int responseCode = response.getStatusLine().getStatusCode();
-            if(responseCode != 200){
-                throw new Exception(&quot;Failed to call API B: &quot; + responseCode);
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        final CountDownLatch latch = new CountDownLatch(1);
+        if(connection == null || !connection.isOpen()) {
+            try {
+                connection = client.connect(new URI(apibHost), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, OptionMap.create(UndertowOptions.ENABLE_HTTP2, true)).get();
+            } catch (Exception e) {
+                logger.error(&quot;Exeption:&quot;, e);
+                throw new ClientException(e);
             }
-            List&lt;String&gt; apicList = (List&lt;String&gt;) Config.getInstance().getMapper().readValue(response.getEntity().getContent(),
-                    new TypeReference&lt;List&lt;String&gt;&gt;(){});
-            list.addAll(apicList);
-        } catch (ClientException e) {
-            throw new Exception(&quot;Client Exception: &quot;, e);
-        } catch (IOException e) {
-            throw new Exception(&quot;IOException:&quot;, e);
         }
-        // now add API B specific messages
+        final AtomicReference&lt;ClientResponse&gt; reference = new AtomicReference&lt;&gt;();
+        try {
+            ClientRequest request = new ClientRequest().setMethod(Methods.GET).setPath(apibPath);
+            // this is to ask client module to pass through correlationId and traceabilityId as well as
+            // getting access token from oauth2 server automatically and attatch authorization headers.
+            if(securityEnabled) client.propagateHeaders(request, exchange);
+            connection.sendRequest(request, client.createClientCallback(reference, latch));
+            latch.await();
+            int statusCode = reference.get().getResponseCode();
+            if(statusCode &gt;= 300){
+                throw new Exception(&quot;Failed to call API B: &quot; + statusCode);
+            }
+            List&lt;String&gt; apidList = Config.getInstance().getMapper().readValue(reference.get().getAttachment(Http2Client.RESPONSE_BODY),
+                    new TypeReference&lt;List&lt;String&gt;&gt;(){});
+            list.addAll(apidList);
+        } catch (Exception e) {
+            logger.error(&quot;Exception:&quot;, e);
+            throw new ClientException(e);
+        }
         list.add(&quot;API A: Message 1&quot;);
         list.add(&quot;API A: Message 2&quot;);
         exchange.getResponseSender().send(Config.getInstance().getMapper().writeValueAsString(list));
     }
 }
+
 </code></pre>
 
 <p>API A needs to have the url of API in order to call it. Let&rsquo;s put it in a config file for
@@ -1092,8 +1186,8 @@ now and move to service discovery later.</p>
 
 <p>Create api_a.yml in src/main/resources/config folder.</p>
 
-<pre><code>api_b_endpoint: &quot;http://localhost:7002/v1/data&quot;
-
+<pre><code>api_b_host: h2c-prior://localhost:7002
+api_b_path: /v1/data
 </code></pre>
 
 <p>Start API A server and test the endpoint /v1/data</p>
@@ -1139,16 +1233,16 @@ Running 30s test @ http://localhost:7001
   4 threads and 128 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     0.00us    0.00us   0.00us    -nan%
-    Req/Sec     1.93k     1.00k    5.49k    65.65%
+    Req/Sec     5.52k     5.58k   20.40k    80.30%
   Latency Distribution
      50%    0.00us
      75%    0.00us
      90%    0.00us
      99%    0.00us
-  220696 requests in 30.06s, 50.72MB read
-  Socket errors: connect 0, read 0, write 0, timeout 128
-Requests/sec:   7342.71
-Transfer/sec:      1.69MB
+  349184 requests in 30.07s, 80.25MB read
+  Socket errors: connect 0, read 0, write 0, timeout 256
+Requests/sec:  11613.39
+Transfer/sec:      2.67MB
 </code></pre>
 
 <p>Before starting the next step, please kill all four instances by Ctrl+C. And check in
@@ -1188,24 +1282,32 @@ going to complete the test cases to test API D TLS connection with client module
 
 <p>This step also shows how to build end-to-end test case to test your API endpoints.</p>
 
-<p>locate DataGetHandlerTest from src/test/com/networknt/apid/handler folder and change the
-content to.</p>
+<p>Locate DataGetHandlerTest from src/test/com/networknt/apid/handler folder and you can see
+there is a test case and the body is commented out. Let&rsquo;s uncomment the test and run it.</p>
+
+<p>As the server.yml contains enableHttps so that httpsPort will be used automatically.</p>
 
 <pre><code>package com.networknt.apid.handler;
 
-import com.networknt.client.Client;
-import com.networknt.server.Server;
-import com.networknt.exception.ClientException;
+import com.networknt.client.Http2Client;
 import com.networknt.exception.ApiException;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.*;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.*;
+import com.networknt.exception.ClientException;
+import io.undertow.UndertowOptions;
+import io.undertow.client.ClientConnection;
+import io.undertow.client.ClientRequest;
+import io.undertow.client.ClientResponse;
+import io.undertow.util.Headers;
+import io.undertow.util.Methods;
+import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xnio.IoUtils;
+import org.xnio.OptionMap;
+import java.net.URI;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import java.io.IOException;
 
@@ -1215,44 +1317,43 @@ public class DataGetHandlerTest {
     public static TestServer server = TestServer.getInstance();
 
     static final Logger logger = LoggerFactory.getLogger(DataGetHandlerTest.class);
+    static final boolean enableHttp2 = server.getServerConfig().isEnableHttp2();
+    static final boolean enableHttps = server.getServerConfig().isEnableHttps();
+    static final int httpPort = server.getServerConfig().getHttpPort();
+    static final int httpsPort = server.getServerConfig().getHttpsPort();
+    static final String url = enableHttp2 || enableHttps ? &quot;https://localhost:&quot; + httpsPort : &quot;http://localhost:&quot; + httpPort;
 
     @Test
-    public void testDataGetHandlerHttp() throws ClientException, ApiException {
-        CloseableHttpClient client = Client.getInstance().getSyncClient();
-        HttpGet httpGet = new HttpGet (&quot;http://localhost:7004/v1/data&quot;);
+    public void testDataGetHandlerTest() throws ClientException, ApiException {
+        final Http2Client client = Http2Client.getInstance();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final ClientConnection connection;
         try {
-            CloseableHttpResponse response = client.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String body = IOUtils.toString(response.getEntity().getContent(), &quot;utf8&quot;);
-            Assert.assertEquals(200, statusCode);
-            Assert.assertNotNull(body);
+            connection = client.connect(new URI(url), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, enableHttp2 ? OptionMap.create(UndertowOptions.ENABLE_HTTP2, true): OptionMap.EMPTY).get();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ClientException(e);
         }
-    }
-
-    @Test
-    public void testDataGetHandlerHttps() throws ClientException, ApiException {
-        CloseableHttpClient client = Client.getInstance().getSyncClient();
-        HttpGet httpGet = new HttpGet (&quot;https://localhost:7444/v1/data&quot;);
+        final AtomicReference&lt;ClientResponse&gt; reference = new AtomicReference&lt;&gt;();
         try {
-            CloseableHttpResponse response = client.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String body = IOUtils.toString(response.getEntity().getContent(), &quot;utf8&quot;);
-            Assert.assertEquals(200, statusCode);
-            Assert.assertNotNull(body);
+            ClientRequest request = new ClientRequest().setPath(&quot;/v1/data&quot;).setMethod(Methods.GET);
+            
+            connection.sendRequest(request, client.createClientCallback(reference, latch));
+            
+            latch.await();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(&quot;Exception: &quot;, e);
+            throw new ClientException(e);
+        } finally {
+            IoUtils.safeClose(connection);
         }
+        int statusCode = reference.get().getResponseCode();
+        String body = reference.get().getAttachment(Http2Client.RESPONSE_BODY);
+        Assert.assertEquals(200, statusCode);
+        Assert.assertNotNull(body);
     }
-
 }
 
 </code></pre>
-
-<p>As you have noticed, a new test case testDataGetHandlerHttps has been added and it access
-the https url. If this test case works, that means API C should connect to API D with TLS
-connection.</p>
 
 <p>As the server is started with self-signed key pair so we have to make sure client has a trust
 store with server certificate in order to pass the server certificate verification. These keys
@@ -1278,8 +1379,8 @@ http.</p>
 
 <p>Locate api_c.yml in src/main/resources/config folder.</p>
 
-<pre><code>api_d_endpoint: &quot;https://localhost:7444/v1/data&quot;
-
+<pre><code>api_d_host: https://localhost:7444
+api_d_path: /v1/data
 </code></pre>
 
 <p>Start API C server and test the endpoint /v1/data</p>
@@ -1290,7 +1391,7 @@ mvn clean install exec:exec
 
 <p>From another terminal window run:</p>
 
-<pre><code>curl localhost:7003/v1/data
+<pre><code>curl -k https://localhost:7443/v1/data
 </code></pre>
 
 <p>And the result is</p>
@@ -1298,17 +1399,14 @@ mvn clean install exec:exec
 <pre><code>[&quot;API D: Message 1&quot;,&quot;API D: Message 2&quot;,&quot;API C: Message 1&quot;,&quot;API C: Message 2&quot;]
 </code></pre>
 
-<p>Access https port should have the same result.</p>
-
-<pre><code>curl -k https://localhost:7443/v1/data
-
-</code></pre>
+<p>As we&rsquo;ve switched to https, from this moment on, we will be using https url all the time.</p>
 
 <h4 id="api-b-1">API B</h4>
 
 <p>Let&rsquo;s keep API C and API D running and update api_b.yml in src/main/resources/config folder.</p>
 
-<pre><code>api_c_endpoint: &quot;https://localhost:7443/v1/data&quot;
+<pre><code>api_c_host: https://localhost:7443
+api_c_path: /v1/data
 
 </code></pre>
 
@@ -1320,7 +1418,7 @@ mvn clean install exec:exec
 
 <p>From another terminal window run:</p>
 
-<pre><code>curl localhost:7002/v1/data
+<pre><code>curl -k https://localhost:7442/v1/data
 </code></pre>
 
 <p>And the result is</p>
@@ -1328,19 +1426,13 @@ mvn clean install exec:exec
 <pre><code>[&quot;API D: Message 1&quot;,&quot;API D: Message 2&quot;,&quot;API C: Message 1&quot;,&quot;API C: Message 2&quot;,&quot;API B: Message 1&quot;,&quot;API B: Message 2&quot;]
 </code></pre>
 
-<p>Here is the https port and the result is the same.</p>
-
-<pre><code>curl -k https://localhost:7442/v1/data
-
-</code></pre>
-
 <h4 id="api-a-1">API A</h4>
 
 <p>API A will call API B to fulfill its request and we need to update api_a.yml in
 src/main/resources/config folder.</p>
 
-<pre><code>api_b_endpoint: &quot;https://localhost:7442/v1/data&quot;
-
+<pre><code>api_b_host: https://localhost:7442
+api_b_path: /v1/data
 </code></pre>
 
 <p>Start API A server and test the endpoint /v1/data</p>
@@ -1351,17 +1443,12 @@ mvn clean install exec:exec
 
 <p>From another terminal window run:</p>
 
-<pre><code>curl localhost:7001/v1/data
+<pre><code>curl -k https://localhost:7441/v1/data
 </code></pre>
 
 <p>And the result is</p>
 
 <pre><code>[&quot;API D: Message 1&quot;,&quot;API D: Message 2&quot;,&quot;API C: Message 1&quot;,&quot;API C: Message 2&quot;,&quot;API B: Message 1&quot;,&quot;API B: Message 2&quot;,&quot;API A: Message 1&quot;,&quot;API A: Message 2&quot;]
-</code></pre>
-
-<p>The https port and the result should be the same.</p>
-
-<pre><code> curl -k https://localhost:7441/v1/data
 </code></pre>
 
 <p>At this moment, we have all four APIs completed and A is calling B, B is calling C and
@@ -1381,23 +1468,25 @@ article in tools <a href="https://networknt.github.io/light-4j/tools/wrk-perf/">
 
 <p>And here is what I got on my i5 desktop</p>
 
-<pre><code> wrk -t4 -c128 -d30s http://localhost:7001 -s pipeline.lua --latency -- /v1/data 1024
+<pre><code>wrk -t4 -c128 -d30s http://localhost:7001 -s pipeline.lua --latency -- /v1/data 1024
 Running 30s test @ http://localhost:7001
   4 threads and 128 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     0.00us    0.00us   0.00us    -nan%
-    Req/Sec     1.06k   716.62     5.49k    73.45%
+    Req/Sec     5.29k     5.53k   21.08k    78.43%
   Latency Distribution
      50%    0.00us
      75%    0.00us
      90%    0.00us
      99%    0.00us
-  100572 requests in 30.06s, 23.12MB read
-Requests/sec:   3345.62
-Transfer/sec:    787.40KB
+  288256 requests in 30.09s, 66.25MB read
+  Socket errors: connect 0, read 0, write 0, timeout 256
+Requests/sec:   9578.74
+Transfer/sec:      2.20MB
 </code></pre>
 
-<p>As you can see https connections are slower than http connections which is expected.</p>
+<p>As you can see https connections are slower than http connections which is expected. But is
+is not that slow compare with http.</p>
 
 <p>Before starting the next step, please kill all four instances by Ctrl+C. And check in
 the httpschain folder we just created and updated.</p>
@@ -1415,7 +1504,7 @@ server up and running so that these servers can get JWT token in real time.</p>
 <p>When we enable security, the source code needs to be updated in order to leverage
 client module to get JWT token automatically. Let&rsquo;s prepare the environment.</p>
 
-<h4 id="update-apis">Update  APIs</h4>
+<h4 id="prepare-apis">Prepare APIs</h4>
 
 <p>Since we are going to change the code, let&rsquo;s copy each service into a new folder
 called security from httpschain.</p>
@@ -1430,68 +1519,6 @@ cd ~/networknt/light-example-4j/rest/ms_chain/api_d
 cp -r httpschain security
 
 </code></pre>
-
-<p>Now for api_a, api_b and api_c we need to update DataGetHandler.java to add
-a line before client.execute.</p>
-
-<pre><code>            Client.getInstance().propagateHeaders(httpGet, exchange);
-
-</code></pre>
-
-<p>Here is the updated file for api_a</p>
-
-<pre><code>package com.networknt.apia.handler;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.networknt.client.Client;
-import com.networknt.config.Config;
-import com.networknt.exception.ClientException;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HttpString;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class DataGetHandler implements HttpHandler {
-    static String CONFIG_NAME = &quot;api_a&quot;;
-    static String apidUrl = (String) Config.getInstance().getJsonMapConfig(CONFIG_NAME).get(&quot;api_b_endpoint&quot;);
-
-    @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
-        List&lt;String&gt; list = new ArrayList&lt;String&gt;();
-        try {
-            CloseableHttpClient client = Client.getInstance().getSyncClient();
-            HttpGet httpGet = new HttpGet(apidUrl);
-            Client.getInstance().propagateHeaders(httpGet, exchange);
-            CloseableHttpResponse response = client.execute(httpGet);
-            int responseCode = response.getStatusLine().getStatusCode();
-            if(responseCode != 200){
-                throw new Exception(&quot;Failed to call API B: &quot; + responseCode);
-            }
-            List&lt;String&gt; apicList = (List&lt;String&gt;) Config.getInstance().getMapper().readValue(response.getEntity().getContent(),
-                    new TypeReference&lt;List&lt;String&gt;&gt;(){});
-            list.addAll(apicList);
-        } catch (ClientException e) {
-            throw new Exception(&quot;Client Exception: &quot;, e);
-        } catch (IOException e) {
-            throw new Exception(&quot;IOException:&quot;, e);
-        }
-        // now add API B specific messages
-        list.add(&quot;API A: Message 1&quot;);
-        list.add(&quot;API A: Message 2&quot;);
-        exchange.getResponseSender().send(Config.getInstance().getMapper().writeValueAsString(list));
-    }
-}
-</code></pre>
-
-<p>Follow api_a, update api_b and api_c.</p>
 
 <h4 id="update-config">Update Config</h4>
 
@@ -1554,7 +1581,8 @@ logJwtToken: true
 logClientUserScope: false
 </code></pre>
 
-<p>Update the security.yml for api_b, api_c and api_d in security folder.</p>
+<p>Update the security.yml for api_b, api_c and api_d in config folder to ensure
+that enableVerifyJwt is true and enableVerifyScope is true.</p>
 
 <h4 id="start-oauth2-services">Start OAuth2 Services</h4>
 
@@ -1588,7 +1616,7 @@ please see this <a href="https://networknt.github.io/light-oauth2/tutorials/ente
 
 <p>The return value is something like this. You returned object should be different and you need to write down the clientId and clientSecret.</p>
 
-<pre><code>{&quot;clientId&quot;:&quot;f0439841-fbe7-43a4-843e-ae0c51971a5e&quot;,&quot;clientSecret&quot;:&quot;pu9aCVwmQjK2PET0_vOl9A&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;mobile&quot;,&quot;clientName&quot;:&quot;Consumer&quot;,&quot;clientDesc&quot;:&quot;A client that calls API A&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_a.r api_a.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-03-30&quot;,&quot;updateDt&quot;:null}
+<pre><code>{&quot;clientId&quot;:&quot;e45cb3f4-d029-4284-a42f-a408de5fbe8a&quot;,&quot;clientSecret&quot;:&quot;mCTYQQ2bTySQ-r1TZqY4Hg&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;mobile&quot;,&quot;clientName&quot;:&quot;Consumer&quot;,&quot;clientDesc&quot;:&quot;A client that calls API A&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_a.r api_a.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-08-30&quot;,&quot;updateDt&quot;:null}
 </code></pre>
 
 <p>To make it convenient, I have created a long lived token that can access api_a with api_a scopes. Here is token and you can verify that in jwt.io</p>
@@ -1604,7 +1632,7 @@ please see this <a href="https://networknt.github.io/light-oauth2/tutorials/ente
 
 <p>And the result is something like this.</p>
 
-<pre><code>{&quot;clientId&quot;:&quot;9380563c-1598-4499-a01c-4abb013d3a49&quot;,&quot;clientSecret&quot;:&quot;Cz0mNzDmQYuKIJNiUBh9nQ&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;service&quot;,&quot;clientName&quot;:&quot;api_a&quot;,&quot;clientDesc&quot;:&quot;API A service&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_b.r api_b.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-06-16&quot;,&quot;updateDt&quot;:null}
+<pre><code>{&quot;clientId&quot;:&quot;732bba11-9989-49ae-b26e-a29ed5b3f27e&quot;,&quot;clientSecret&quot;:&quot;hp0x-__HQZasm2f0gPih_Q&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;service&quot;,&quot;clientName&quot;:&quot;api_a&quot;,&quot;clientDesc&quot;:&quot;API A service&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_b.r api_b.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-08-30&quot;,&quot;updateDt&quot;:null}
 </code></pre>
 
 <p>Now we need to update client.yml and secret.yml with this clientId and clientSecret for
@@ -1613,27 +1641,7 @@ api_a. These config files are located in src/main/resources/config folder.</p>
 <p>Here is the client.yml for api_a. You can see that client_id and scope are updated based
 on the result of the client registration.</p>
 
-<pre><code>sync:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  timeout: 10000
-  keepAlive: 15000
-async:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  reactor:
-    ioThreadCount: 1
-    connectTimeout: 10000
-    soTimeout: 10000
-  timeout: 10000
-  keepAlive: 15000
-tls:
+<pre><code>tls:
   # if the server is using self-signed certificate, this need to be false. If true, you have to use CA signed certificate
   # or load truststore that contains the self-signed cretificate.
   verifyHostname: true
@@ -1655,7 +1663,7 @@ oauth:
     # token endpoint for authorization code grant
     uri: &quot;/oauth2/token&quot;
     # client_id for authorization code grant flow. client_secret is in secret.yml
-    client_id: 9380563c-1598-4499-a01c-4abb013d3a49
+    client_id: 732bba11-9989-49ae-b26e-a29ed5b3f27e
     redirect_uri: https://localhost:8080/authorization_code
     scope:
     - api_b.r
@@ -1664,7 +1672,7 @@ oauth:
     # token endpoint for client credentials grant
     uri: &quot;/oauth2/token&quot;
     # client_id for client credentials grant flow. client_secret is in secret.yml
-    client_id: 9380563c-1598-4499-a01c-4abb013d3a49
+    client_id: 732bba11-9989-49ae-b26e-a29ed5b3f27e
     scope:
     - api_b.r
     - api_b.w
@@ -1703,10 +1711,10 @@ clientKeyPass: password
 clientTruststorePass: password
 
 # Authorization code client secret for OAuth2 server
-authorizationCodeClientSecret: Cz0mNzDmQYuKIJNiUBh9nQ
+authorizationCodeClientSecret: hp0x-__HQZasm2f0gPih_Q
 
 # Client credentials client secret for OAuth2 server
-clientCredentialsClientSecret: Cz0mNzDmQYuKIJNiUBh9nQ
+clientCredentialsClientSecret: hp0x-__HQZasm2f0gPih_Q
 
 
 </code></pre>
@@ -1719,7 +1727,7 @@ clientCredentialsClientSecret: Cz0mNzDmQYuKIJNiUBh9nQ
 
 <p>And the result is</p>
 
-<pre><code>{&quot;clientId&quot;:&quot;75e196ab-21c2-467b-9f2c-7d2f9720c1df&quot;,&quot;clientSecret&quot;:&quot;zzO34AhITwWcuvAkPxW4HA&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;service&quot;,&quot;clientName&quot;:&quot;api_b&quot;,&quot;clientDesc&quot;:&quot;API B service&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_c.r api_c.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-06-16&quot;,&quot;updateDt&quot;:null}
+<pre><code>{&quot;clientId&quot;:&quot;9ace3ee5-7c01-453d-a80b-3c1e0bed8c40&quot;,&quot;clientSecret&quot;:&quot;tjJGnU6ySjecmTDIbxXuXg&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;service&quot;,&quot;clientName&quot;:&quot;api_b&quot;,&quot;clientDesc&quot;:&quot;API B service&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_c.r api_c.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-08-30&quot;,&quot;updateDt&quot;:null}
 </code></pre>
 
 <p>Now let&rsquo;s update client.yml for the client_id and scope like api_a and update secrets for
@@ -1727,27 +1735,7 @@ secret.yml</p>
 
 <p>client.yml</p>
 
-<pre><code>sync:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  timeout: 10000
-  keepAlive: 15000
-async:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  reactor:
-    ioThreadCount: 1
-    connectTimeout: 10000
-    soTimeout: 10000
-  timeout: 10000
-  keepAlive: 15000
-tls:
+<pre><code>tls:
   # if the server is using self-signed certificate, this need to be false. If true, you have to use CA signed certificate
   # or load truststore that contains the self-signed cretificate.
   verifyHostname: true
@@ -1769,7 +1757,7 @@ oauth:
     # token endpoint for authorization code grant
     uri: &quot;/oauth2/token&quot;
     # client_id for authorization code grant flow. client_secret is in secret.yml
-    client_id: 75e196ab-21c2-467b-9f2c-7d2f9720c1df
+    client_id: 9ace3ee5-7c01-453d-a80b-3c1e0bed8c40
     redirect_uri: https://localhost:8080/authorization_code
     scope:
     - api_c.r
@@ -1778,7 +1766,7 @@ oauth:
     # token endpoint for client credentials grant
     uri: &quot;/oauth2/token&quot;
     # client_id for client credentials grant flow. client_secret is in secret.yml
-    client_id: 75e196ab-21c2-467b-9f2c-7d2f9720c1df
+    client_id: 9ace3ee5-7c01-453d-a80b-3c1e0bed8c40
     scope:
     - api_c.r
     - api_c.w
@@ -1816,10 +1804,10 @@ clientKeyPass: password
 clientTruststorePass: password
 
 # Authorization code client secret for OAuth2 server
-authorizationCodeClientSecret: zzO34AhITwWcuvAkPxW4HA
+authorizationCodeClientSecret: tjJGnU6ySjecmTDIbxXuXg
 
 # Client credentials client secret for OAuth2 server
-clientCredentialsClientSecret: zzO34AhITwWcuvAkPxW4HA
+clientCredentialsClientSecret: tjJGnU6ySjecmTDIbxXuXg
 
 </code></pre>
 
@@ -1831,34 +1819,14 @@ clientCredentialsClientSecret: zzO34AhITwWcuvAkPxW4HA
 
 <p>And the result is</p>
 
-<pre><code>{&quot;clientId&quot;:&quot;a366d5c1-d5c1-4ade-8b45-7db5e29859fb&quot;,&quot;clientSecret&quot;:&quot;R16idrozRduTyLh6cysYKQ&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;service&quot;,&quot;clientName&quot;:&quot;api_c&quot;,&quot;clientDesc&quot;:&quot;API C service&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_d.r api_d.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-06-16&quot;,&quot;updateDt&quot;:null}
+<pre><code>{&quot;clientId&quot;:&quot;294e2fa6-fb2e-4fec-9fed-e9fe1d7fc83f&quot;,&quot;clientSecret&quot;:&quot;TuC8EC49RZWAkDIY7bSmmw&quot;,&quot;clientType&quot;:&quot;public&quot;,&quot;clientProfile&quot;:&quot;service&quot;,&quot;clientName&quot;:&quot;api_c&quot;,&quot;clientDesc&quot;:&quot;API C service&quot;,&quot;ownerId&quot;:&quot;admin&quot;,&quot;scope&quot;:&quot;api_d.r api_d.w&quot;,&quot;redirectUri&quot;:&quot;http://localhost:8080/authorization&quot;,&quot;createDt&quot;:&quot;2017-08-30&quot;,&quot;updateDt&quot;:null}
 </code></pre>
 
 <p>We need to update client.yml and secret.yml according to the result of the registration</p>
 
 <p>client.yml</p>
 
-<pre><code>sync:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  timeout: 10000
-  keepAlive: 15000
-async:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  reactor:
-    ioThreadCount: 1
-    connectTimeout: 10000
-    soTimeout: 10000
-  timeout: 10000
-  keepAlive: 15000
-tls:
+<pre><code>tls:
   # if the server is using self-signed certificate, this need to be false. If true, you have to use CA signed certificate
   # or load truststore that contains the self-signed cretificate.
   verifyHostname: true
@@ -1880,7 +1848,7 @@ oauth:
     # token endpoint for authorization code grant
     uri: &quot;/oauth2/token&quot;
     # client_id for authorization code grant flow. client_secret is in secret.yml
-    client_id: a366d5c1-d5c1-4ade-8b45-7db5e29859fb
+    client_id: 294e2fa6-fb2e-4fec-9fed-e9fe1d7fc83f
     redirect_uri: https://localhost:8080/authorization_code
     scope:
     - api_d.r
@@ -1889,11 +1857,10 @@ oauth:
     # token endpoint for client credentials grant
     uri: &quot;/oauth2/token&quot;
     # client_id for client credentials grant flow. client_secret is in secret.yml
-    client_id: a366d5c1-d5c1-4ade-8b45-7db5e29859fb
+    client_id: 294e2fa6-fb2e-4fec-9fed-e9fe1d7fc83f
     scope:
     - api_d.r
     - api_d.w
-
 </code></pre>
 
 <p>secret.yml</p>
@@ -1928,10 +1895,10 @@ clientKeyPass: password
 clientTruststorePass: password
 
 # Authorization code client secret for OAuth2 server
-authorizationCodeClientSecret: R16idrozRduTyLh6cysYKQ
+authorizationCodeClientSecret: TuC8EC49RZWAkDIY7bSmmw
 
 # Client credentials client secret for OAuth2 server
-clientCredentialsClientSecret: R16idrozRduTyLh6cysYKQ
+clientCredentialsClientSecret: TuC8EC49RZWAkDIY7bSmmw
 
 </code></pre>
 
@@ -1944,19 +1911,25 @@ update the test case to put long lived token in it.</p>
 
 <pre><code>package com.networknt.apid.handler;
 
-import com.networknt.client.Client;
-import com.networknt.server.Server;
-import com.networknt.exception.ClientException;
+import com.networknt.client.Http2Client;
 import com.networknt.exception.ApiException;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.*;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.*;
+import com.networknt.exception.ClientException;
+import io.undertow.UndertowOptions;
+import io.undertow.client.ClientConnection;
+import io.undertow.client.ClientRequest;
+import io.undertow.client.ClientResponse;
+import io.undertow.util.Headers;
+import io.undertow.util.Methods;
+import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xnio.IoUtils;
+import org.xnio.OptionMap;
+import java.net.URI;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import java.io.IOException;
 
@@ -1966,46 +1939,52 @@ public class DataGetHandlerTest {
     public static TestServer server = TestServer.getInstance();
 
     static final Logger logger = LoggerFactory.getLogger(DataGetHandlerTest.class);
+    static final boolean enableHttp2 = server.getServerConfig().isEnableHttp2();
+    static final boolean enableHttps = server.getServerConfig().isEnableHttps();
+    static final int httpPort = server.getServerConfig().getHttpPort();
+    static final int httpsPort = server.getServerConfig().getHttpsPort();
+    static final String url = enableHttp2 || enableHttps ? &quot;https://localhost:&quot; + httpsPort : &quot;http://localhost:&quot; + httpPort;
 
     @Test
-    public void testDataGetHandlerHttp() throws ClientException, ApiException {
-        CloseableHttpClient client = Client.getInstance().getSyncClient();
-        HttpGet httpGet = new HttpGet (&quot;http://localhost:7004/v1/data&quot;);
-        httpGet.setHeader(&quot;Authorization&quot;, &quot;Bearer eyJraWQiOiIxMDAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJ1cm46Y29tOm5ldHdvcmtudDpvYXV0aDI6djEiLCJhdWQiOiJ1cm46Y29tLm5ldHdvcmtudCIsImV4cCI6MTgxMzAwNTAzNiwianRpIjoiN2daaHY2TS14UXpvVDhuNVMxODNodyIsImlhdCI6MTQ5NzY0NTAzNiwibmJmIjoxNDk3NjQ0OTE2LCJ2ZXJzaW9uIjoiMS4wIiwidXNlcl9pZCI6IlN0ZXZlIiwidXNlcl90eXBlIjoiRU1QTE9ZRUUiLCJjbGllbnRfaWQiOiJmN2Q0MjM0OC1jNjQ3LTRlZmItYTUyZC00YzU3ODc0MjFlNzIiLCJzY29wZSI6WyJhcGlfYS53IiwiYXBpX2IudyIsImFwaV9jLnciLCJhcGlfZC53Iiwic2VydmVyLmluZm8uciJdfQ.FkFbPTRXZf045_7fBlEPQTn7rNoib54TYQeFzSjLmMkUjrfDsJZD6EnrsAquDpHt8GKQNqGbyPzgiNWAIYHgwPZvM-lHw_dv0KUKii3D0woaFBkqu4vYxqyImROBii0B38evxPAZVONWqUncL21592bFPHsxGCz5oHL2unLv-oIQklWxcILpMrSL_tf7nhXHSu1RkRhshxAiAHSSpBZnluu4-jqZdEFtc5U_YApToUrKkmI_An1op5-6rS_I-fMbSnSctUoDgg3RT4Zvw1HC-ZLJlXWRF5-FD4uQOAOgy_T7PI75pNiuh4wgOGgdIf48X-7-fDkEbla-cVLiuj3z4g&quot;);
+    public void testDataGetHandlerTest() throws ClientException, ApiException {
+        final Http2Client client = Http2Client.getInstance();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final ClientConnection connection;
         try {
-            CloseableHttpResponse response = client.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String body = IOUtils.toString(response.getEntity().getContent(), &quot;utf8&quot;);
-            Assert.assertEquals(200, statusCode);
-            Assert.assertNotNull(body);
+            connection = client.connect(new URI(url), Http2Client.WORKER, Http2Client.SSL, Http2Client.POOL, enableHttp2 ? OptionMap.create(UndertowOptions.ENABLE_HTTP2, true): OptionMap.EMPTY).get();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ClientException(e);
         }
-    }
-
-    @Test
-    public void testDataGetHandlerHttps() throws ClientException, ApiException {
-        CloseableHttpClient client = Client.getInstance().getSyncClient();
-        HttpGet httpGet = new HttpGet (&quot;https://localhost:7444/v1/data&quot;);
-        httpGet.setHeader(&quot;Authorization&quot;, &quot;Bearer eyJraWQiOiIxMDAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJ1cm46Y29tOm5ldHdvcmtudDpvYXV0aDI6djEiLCJhdWQiOiJ1cm46Y29tLm5ldHdvcmtudCIsImV4cCI6MTgxMzAwNTAzNiwianRpIjoiN2daaHY2TS14UXpvVDhuNVMxODNodyIsImlhdCI6MTQ5NzY0NTAzNiwibmJmIjoxNDk3NjQ0OTE2LCJ2ZXJzaW9uIjoiMS4wIiwidXNlcl9pZCI6IlN0ZXZlIiwidXNlcl90eXBlIjoiRU1QTE9ZRUUiLCJjbGllbnRfaWQiOiJmN2Q0MjM0OC1jNjQ3LTRlZmItYTUyZC00YzU3ODc0MjFlNzIiLCJzY29wZSI6WyJhcGlfYS53IiwiYXBpX2IudyIsImFwaV9jLnciLCJhcGlfZC53Iiwic2VydmVyLmluZm8uciJdfQ.FkFbPTRXZf045_7fBlEPQTn7rNoib54TYQeFzSjLmMkUjrfDsJZD6EnrsAquDpHt8GKQNqGbyPzgiNWAIYHgwPZvM-lHw_dv0KUKii3D0woaFBkqu4vYxqyImROBii0B38evxPAZVONWqUncL21592bFPHsxGCz5oHL2unLv-oIQklWxcILpMrSL_tf7nhXHSu1RkRhshxAiAHSSpBZnluu4-jqZdEFtc5U_YApToUrKkmI_An1op5-6rS_I-fMbSnSctUoDgg3RT4Zvw1HC-ZLJlXWRF5-FD4uQOAOgy_T7PI75pNiuh4wgOGgdIf48X-7-fDkEbla-cVLiuj3z4g&quot;);
+        final AtomicReference&lt;ClientResponse&gt; reference = new AtomicReference&lt;&gt;();
         try {
-            CloseableHttpResponse response = client.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String body = IOUtils.toString(response.getEntity().getContent(), &quot;utf8&quot;);
-            Assert.assertEquals(200, statusCode);
-            Assert.assertNotNull(body);
+            ClientRequest request = new ClientRequest().setPath(&quot;/v1/data&quot;).setMethod(Methods.GET);
+            request.getRequestHeaders().put(Headers.AUTHORIZATION, &quot;Bearer eyJraWQiOiIxMDAiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJ1cm46Y29tOm5ldHdvcmtudDpvYXV0aDI6djEiLCJhdWQiOiJ1cm46Y29tLm5ldHdvcmtudCIsImV4cCI6MTgxMzAwNTAzNiwianRpIjoiN2daaHY2TS14UXpvVDhuNVMxODNodyIsImlhdCI6MTQ5NzY0NTAzNiwibmJmIjoxNDk3NjQ0OTE2LCJ2ZXJzaW9uIjoiMS4wIiwidXNlcl9pZCI6IlN0ZXZlIiwidXNlcl90eXBlIjoiRU1QTE9ZRUUiLCJjbGllbnRfaWQiOiJmN2Q0MjM0OC1jNjQ3LTRlZmItYTUyZC00YzU3ODc0MjFlNzIiLCJzY29wZSI6WyJhcGlfYS53IiwiYXBpX2IudyIsImFwaV9jLnciLCJhcGlfZC53Iiwic2VydmVyLmluZm8uciJdfQ.FkFbPTRXZf045_7fBlEPQTn7rNoib54TYQeFzSjLmMkUjrfDsJZD6EnrsAquDpHt8GKQNqGbyPzgiNWAIYHgwPZvM-lHw_dv0KUKii3D0woaFBkqu4vYxqyImROBii0B38evxPAZVONWqUncL21592bFPHsxGCz5oHL2unLv-oIQklWxcILpMrSL_tf7nhXHSu1RkRhshxAiAHSSpBZnluu4-jqZdEFtc5U_YApToUrKkmI_An1op5-6rS_I-fMbSnSctUoDgg3RT4Zvw1HC-ZLJlXWRF5-FD4uQOAOgy_T7PI75pNiuh4wgOGgdIf48X-7-fDkEbla-cVLiuj3z4g&quot;);
+            connection.sendRequest(request, client.createClientCallback(reference, latch));
+            
+            latch.await();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(&quot;Exception: &quot;, e);
+            throw new ClientException(e);
+        } finally {
+            IoUtils.safeClose(connection);
         }
+        int statusCode = reference.get().getResponseCode();
+        String body = reference.get().getAttachment(Http2Client.RESPONSE_BODY);
+        Assert.assertEquals(200, statusCode);
+        Assert.assertNotNull(body);
     }
-
 }
 
 </code></pre>
 
 <p>Now we need to rebuild and restart API A, B, C and D in four terminals.</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_a/security
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_d/security
+mvn clean install exec:exec
+
+</code></pre>
+
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_c/security
 mvn clean install exec:exec
 </code></pre>
 
@@ -2013,13 +1992,8 @@ mvn clean install exec:exec
 mvn clean install exec:exec
 </code></pre>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_c/security
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_a/security
 mvn clean install exec:exec
-</code></pre>
-
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_d/security
-mvn clean install exec:exec
-
 </code></pre>
 
 <p>Now let&rsquo;s test it with a JWT token for the https port on api_a. For this moment on,
@@ -2043,20 +2017,23 @@ we are going to use https all the time as it is required if OAuth2 is enabled.</
   4 threads and 128 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     0.00us    0.00us   0.00us    -nan%
-    Req/Sec   484.87    476.28     3.43k    88.89%
+    Req/Sec     4.68k     4.11k   15.64k    56.64%
   Latency Distribution
      50%    0.00us
      75%    0.00us
      90%    0.00us
      99%    0.00us
-  22576 requests in 30.10s, 5.19MB read
-Requests/sec:    750.14
-Transfer/sec:    176.55KB
-
+  235520 requests in 30.10s, 54.13MB read
+  Socket errors: connect 0, read 0, write 0, timeout 128
+Requests/sec:   7824.81
+Transfer/sec:      1.80MB
 </code></pre>
 
-<p>As you can see the performance dropped a lot due to JWT verification. We will explore some
-optimization later on with JWT verification. But is it out of scope for this tutorial.</p>
+<p>As you can see the performance dropped a little due to JWT verification.</p>
+
+<h2 id="enable-logging">Enable Logging</h2>
+
+<p>This is missing and need to be added.</p>
 
 <h2 id="enable-metrics">Enable Metrics</h2>
 
@@ -2114,7 +2091,12 @@ docker-compose -f docker-compose-metrics.yml up
 
 <p>Now let&rsquo;s start four APIs from four terminals.</p>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_a/metrics
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_d/metrics
+mvn clean install exec:exec
+
+</code></pre>
+
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_c/metrics
 mvn clean install exec:exec
 </code></pre>
 
@@ -2122,13 +2104,8 @@ mvn clean install exec:exec
 mvn clean install exec:exec
 </code></pre>
 
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_c/metrics
+<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_a/metrics
 mvn clean install exec:exec
-</code></pre>
-
-<pre><code>cd ~/networknt/light-example-4j/rest/ms_chain/api_d/metrics
-mvn clean install exec:exec
-
 </code></pre>
 
 <p>Let&rsquo;s use curl to access API A, this time I am using a long lived token I generated
@@ -2275,22 +2252,23 @@ folder.</p>
 
 <p>Let&rsquo;s create api_a.yml in ms_chain/etc/api_a/config folder.</p>
 
-<pre><code>api_b_endpoint: &quot;https://apib:7442/v1/data&quot;
-
+<pre><code>api_b_host: https://apib:7442
+api_b_path: /v1/data
 </code></pre>
 
 <p>Please note that apib is the name of the service in docker-compose-app.yml</p>
 
 <p>Create api_b.yml in ms_chain/etc/api_b/config folder</p>
 
-<pre><code>api_c_endpoint: &quot;https://apic:7443/v1/data&quot;
+<pre><code>api_c_host: https://apic:7443
+api_c_path: /v1/data
 
 </code></pre>
 
 <p>Create api_c.yml in ms_chain/etc/api_c/config folder</p>
 
-<pre><code>api_d_endpoint: &quot;https://apid:7444/v1/data&quot;
-
+<pre><code>api_d_host: https://apid:7444
+api_d_path: /v1/data
 </code></pre>
 
 <p>As each API needs to access OAuth2 server to get access token, so we need to update
@@ -2304,32 +2282,16 @@ cp ~/networknt/light-example-4j/rest/ms_chain/api_b/metrics/src/main/resources/c
 cp ~/networknt/light-example-4j/rest/ms_chain/api_c/metrics/src/main/resources/config/client.yml ~/networknt/light-example-4j/rest/ms_chain/etc/api_c/config
 </code></pre>
 
-<p>The api_a client.yml in ms_chain/etc/api_a/config folder looks like this after modification.</p>
+<p>The api_a client.yml in ms_chain/etc/api_a/config folder looks like this after modification.
+Notice that server host has been changed to oauth2-token and oauth2-key from localhost.</p>
 
-<pre><code>sync:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  timeout: 10000
-  keepAlive: 15000
-async:
-  maxConnectionTotal: 100
-  maxConnectionPerRoute: 10
-  routes:
-    api.google.com: 20
-    api.facebook.com: 10
-  reactor:
-    ioThreadCount: 1
-    connectTimeout: 10000
-    soTimeout: 10000
-  timeout: 10000
-  keepAlive: 15000
+<pre><code># This is the configuration file for Http2Client.
+---
+# Settings for TLS
 tls:
   # if the server is using self-signed certificate, this need to be false. If true, you have to use CA signed certificate
   # or load truststore that contains the self-signed cretificate.
-  verifyHostname: false
+  verifyHostname: true
   # trust store contains certifictes that server needs. Enable if tls is used.
   loadTrustStore: true
   # trust store location can be specified here or system properties javax.net.ssl.trustStore and password javax.net.ssl.trustStorePassword
@@ -2338,35 +2300,41 @@ tls:
   loadKeyStore: false
   # key store location
   keyStore: tls/client.keystore
+# settings for OAuth2 server communication
 oauth:
-  tokenRenewBeforeExpired: 600000
-  expiredRefreshRetryDelay: 5000
-  earlyRefreshRetryDelay: 30000
-  # token server url. The default port number for token service is 6882.
-  server_url: http://oauth2-token:6882
-  authorization_code:
-    # token endpoint for authorization code grant
-    uri: &quot;/oauth2/token&quot;
-    # client_id for authorization code grant flow. client_secret is in secret.yml
-    client_id: 9380563c-1598-4499-a01c-4abb013d3a49
-    redirect_uri: https://localhost:8080/authorization_code
-    scope:
-    - api_b.r
-    - api_b.w
-  client_credentials:
-    # token endpoint for client credentials grant
-    uri: &quot;/oauth2/token&quot;
-    # client_id for client credentials grant flow. client_secret is in secret.yml
-    client_id: 9380563c-1598-4499-a01c-4abb013d3a49
-    scope:
-    - api_b.r
-    - api_b.w
-
+  token:
+    # The scope token will be renewed automatically 1 minutes before expiry
+    tokenRenewBeforeExpired: 60000
+    # if scope token is expired, we need short delay so that we can retry faster.
+    expiredRefreshRetryDelay: 2000
+    # if scope token is not expired but in renew windown, we need slow retry delay.
+    earlyRefreshRetryDelay: 4000
+    # token server url. The default port number for token service is 6882.
+    server_url: http://oauth2-token:6882
+    serviceId: com.networknt.oauth2-token-1.0.0
+    authorization_code:
+      # token endpoint for authorization code grant
+      uri: &quot;/oauth2/token&quot;
+      # client_id for authorization code grant flow. client_secret is in secret.yml
+      client_id: 732bba11-9989-49ae-b26e-a29ed5b3f27e
+      redirect_uri: https://localhost:8080/authorization_code
+      scope:
+      - api_b.r
+      - api_b.w
+    client_credentials:
+      # token endpoint for client credentials grant
+      uri: &quot;/oauth2/token&quot;
+      # client_id for client credentials grant flow. client_secret is in secret.yml
+      client_id: 732bba11-9989-49ae-b26e-a29ed5b3f27e
+      scope:
+      - api_b.r
+      - api_b.w
+  key:
+    server_url: http://oauth2-key:6886
+    serviceId: com.networknt.oauth2-key-1.0.0
+    uri: &quot;/oauth2/key&quot;
+    client_id: 732bba11-9989-49ae-b26e-a29ed5b3f27e
 </code></pre>
-
-<p>As you can see the server_url has been change to &ldquo;<a href="http://oauth2-token:6882&quot;">http://oauth2-token:6882&quot;</a> and
-tls/verifyHostname is changed to false as we are using self-signed certificate and hostname
-has been changed to something other than localhost.</p>
 
 <p>Now in order to make the metrics works, we need to copy the metrics.yml to the config folder
 and modify it for the influxdb hostname.</p>
@@ -2431,15 +2399,16 @@ docker-compose -f docker-compose-app.yml up
   4 threads and 128 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency     0.00us    0.00us   0.00us    -nan%
-    Req/Sec   482.32    418.96     3.40k    83.98%
+    Req/Sec     3.67k     2.92k   14.68k    57.75%
   Latency Distribution
      50%    0.00us
      75%    0.00us
      90%    0.00us
      99%    0.00us
-  21556 requests in 30.05s, 4.95MB read
-Requests/sec:    717.22
-Transfer/sec:    168.80KB
+  252860 requests in 30.07s, 58.12MB read
+  Socket errors: connect 0, read 0, write 0, timeout 128
+Requests/sec:   8409.82
+Transfer/sec:      1.93MB
 </code></pre>
 
 <h2 id="kubernetes">Kubernetes</h2>
